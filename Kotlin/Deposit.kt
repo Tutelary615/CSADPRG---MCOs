@@ -2,7 +2,6 @@ fun makeDeposit(ac : Account) {
     var depositAmount : Double = 0.0
     var inputStr = ""
     var isInputDouble : Boolean = true
-    val prevBalance : Double = ac.getBalance()
 
     fun getDepositAmount() {
         print("Amount to deposit: ")
