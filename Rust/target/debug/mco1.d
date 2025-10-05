@@ -1,0 +1,1 @@
+C:\Users\Nathan\Desktop\Education\DLSU\TRIMESTER\ 4\CSADPRG\Rust\ Program\csadprg-rust\mco1\target\debug\mco1.exe: C:\Users\Nathan\Desktop\Education\DLSU\TRIMESTER\ 4\CSADPRG\Rust\ Program\csadprg-rust\mco1\src\main.rs
