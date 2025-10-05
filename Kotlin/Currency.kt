@@ -2,7 +2,7 @@ class Currency(name : String, currencyCode : String)  {
 
     private val name : String
     private val currencyCode : String
-    private var exchangeRate : Double = 1.0
+    private var exchangeRate : Double = -1.0
 
     init {
         this.name = name
@@ -11,6 +11,10 @@ class Currency(name : String, currencyCode : String)  {
 
     fun getName() : String {
         return name
+    }
+
+    fun setExchangeRate(exchangeRate : Double) {
+        this.exchangeRate = exchangeRate
     }
 
     fun getCurrencyCode() : String {
