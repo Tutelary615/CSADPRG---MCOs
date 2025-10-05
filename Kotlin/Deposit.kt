@@ -7,20 +7,22 @@ fun makeDeposit(ac : Account) {
     }
 
     fun executeDeposit() {
-        val depositAmount : Double = depositAmountInput.toDouble()
+        val depositAmount : Double = depositAmountInput.trim().toDouble()
         ac.deposit(depositAmount)
         println("Transaction Successful")
-        println("Deposit Amount: ${String.format("%.2f", depositAmount)}")
+        println("Withdraw Amount: ${String.format("%.2f", depositAmount)}")
         println("Updated Balance: ${String.format("%.2f", ac.getBalance())}")
     }
-
     println("Make Deposit")
-    displayAccountDetails(ac)
-    getDepositAmount()
+   do {
 
-    if (isValidAmount(depositAmountInput)) {
-        executeDeposit()
-    }
-    println()
+       displayAccountDetails(ac)
+       getDepositAmount()
+
+       if (isValidAmount(depositAmountInput)) {
+           executeDeposit()
+       }
+       println()
+   } while (!willReturnToMainMenu())
 }
 
