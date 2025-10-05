@@ -1,40 +1,26 @@
 fun makeDeposit(ac : Account) {
-    var depositAmount : Double = 0.0
-    var inputStr = ""
-    var isInputDouble : Boolean = true
+    var depositAmountInput : String = ""
 
     fun getDepositAmount() {
         print("Amount to deposit: ")
-        inputStr = readln()
-    }
-
-    fun validateInput() {
-        try {
-            depositAmount = inputStr.toDouble()
-        } catch (e: NumberFormatException) {
-            println("No/Invalid amount entered")
-            isInputDouble = false
-        }
+        depositAmountInput = readln()
     }
 
     fun executeDeposit() {
-        if  (ac.deposit(depositAmount)) {
-            println("Transaction Successful")
-            println("Deposit Amount: ${String.format("%.2f", depositAmount)}")
-            println("Updated Balance: ${ac.getBalance()}")
-        } else {
-            println("Invalid amount entered")
-        }
+        val depositAmount : Double = depositAmountInput.toDouble()
+        ac.deposit(depositAmount)
+        println("Transaction Successful")
+        println("Deposit Amount: ${String.format("%.2f", depositAmount)}")
+        println("Updated Balance: ${String.format("%.2f", ac.getBalance())}")
     }
 
     println("Make Deposit")
     displayAccountDetails(ac)
     getDepositAmount()
-    validateInput()
-    println()
 
-    if (isInputDouble) {
+    if (isValidAmount(depositAmountInput)) {
         executeDeposit()
     }
+    println()
 }
 
