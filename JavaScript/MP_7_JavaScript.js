@@ -200,6 +200,9 @@ async function currencyExchange() {
         if (exchangeRatesToPHP.get(exchangeCurrency) === 0) {
             return console.log(`\n${exchangeCurrency} exchange rate hasn't been set.`);
         };
+        if (sourceCurrency === exchangeCurrency) {
+            return console.log("Converting to same currency denied.");
+        }
     
         exchangeAmount = sourceAmount * exchangeRatesToPHP.get(sourceCurrency) / exchangeRatesToPHP.get(exchangeCurrency);
         console.log(`Exchange Amount: ${roundValueToString(exchangeAmount)}`);
