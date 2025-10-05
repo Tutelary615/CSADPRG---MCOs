@@ -27,10 +27,10 @@ function getInput(query) {
     return new Promise(resolve => {
         rl.question(query, resolve);
     });
-}
+};
 
 const exchangeRatesToPHP = new Map([
-    ["PHP", 0],
+    ["PHP", 1],
     ["USD", 0],
     ["JPY", 0],
     ["GBP", 0],
@@ -38,35 +38,47 @@ const exchangeRatesToPHP = new Map([
     ["CNY", 0]
 ]);
 
-function format(value) {
+function roundValue(value) {
+    return Math.round(value * 100) / 100;
+}
+
+function roundValueToString(value) {
     return value.toFixed(2);
+};
+
+function newline() {
+    console.log();
+};
+
+function padNumber(value, spaces) {
+    return String(value).padEnd(spaces, ' ');
 }
 
 const account = {
     name: "user",
     balance: 0.00,
-
+    
     deposit: function(amount) {
-        this.balance += amount;
-        console.log("Updated Balance: " + format(this.balance) + "\n");
+        this.balance += roundValue(amount);
+        console.log(`Updated Balance: ${roundValueToString(this.balance)}\n`);
     },
 
     withdraw: function(amount) {
         if (amount > this.balance) {
             console.log("Insufficient funds.\n");
         } else {
-            this.balance -= amount;
-            console.log("Updated Balance: " + format(this.balance) + "\n");
+            this.balance -= roundValue(amount);
+            console.log(`Updated Balance: ${roundValueToString(this.balance)}\n`);
         }
     },
-
+    
     details: function() {
-        console.log("Account Name: " + this.name);
-        console.log("Current Balance: " + format(this.balance));
+        console.log(`Account Name: ${this.name}`);
+        console.log(`Current Balance: ${roundValueToString(this.balance)}`);
         console.log("Currency: PHP");
         return "";
     }
-}
+};
 
 function getCurrency(num) {
     switch (num) {
@@ -87,7 +99,7 @@ function printCurrencies() {
     console.log("[4] British Pound Sterling (GBP)");
     console.log("[5] Euro (EUR)");
     console.log("[6] Chinese Yuan Renminni (CNY)\n");
-}
+};
 
 async function registerAccountName() {
     rl.resume();
@@ -99,35 +111,35 @@ async function registerAccountName() {
     } while (input === "");
     
     account.name = input; // assign input;
-}
+};
 
 async function depositAmount() {
     console.log("Deposit Amount");
     account.details();
-    console.log();
+    newline();
     
-    let input = await getInput("Deposit Amount: ");
+    let input = Number(await getInput("Deposit Amount: "));
 
-    if (Number(input) > 0) {
+    if (input > 0) {
         account.deposit(Number(input));
     } else {
-        console.log("Invalid input.");
+        console.log("\nInvalid input.");
     }
-}
+};
 
 async function withdrawAmount() {
     console.log("Withdraw Amount");
     account.details();
-    console.log();
+    newline();
     
-    let input = await getInput("Withdraw Amount: ");
+    let input = Number(await getInput("Deposit Amount: "));
 
-    if (Number(input) > 0) {
+    if (input > 0) {
         account.withdraw(Number(input));
     } else {
-        console.log("Invalid input.");
+        console.log("\nInvalid input.");
     }
-}
+};
 
 // Currency Exchange
 async function currencyExchange() {
@@ -135,42 +147,83 @@ async function currencyExchange() {
     console.log("Source Currency Option:");
     printCurrencies();
 
-    // inputs; add validation
-    console.log("Source Currency: ");
-    console.log("Source Amount: ");
+    let sourceCurrency = Number(await getInput("Source Currency: "));
+    sourceCurrency = getCurrency(sourceCurrency);
 
-    console.log("Exchange Currency Option:");
+    if (sourceCurrency === null) {
+        return console.log("\nInvalid input.")
+    };
+    if (exchangeRatesToPHP.get(sourceCurrency) === 0) {
+        return console.log(`\n${sourceCurrency} exchange rate hasn't been set.`);
+    };
+
+    let sourceAmount = Number(await getInput("Source Amount: "));
+    
+    if (!sourceAmount || sourceAmount <= 0) {
+        return console.log("\nInvalid input.")
+    };
+
+    console.log("\nExchange Currency Options:");
     printCurrencies();
 
-    // inputs; add validation
-    console.log("Exchange Currency: ");
+    let exchangeCurrency = Number(await getInput("Exchange Currency: "));
+    exchangeCurrency = getCurrency(exchangeCurrency);
 
-    // convert to php then convert to exchange currency
-    console.log("Exchange Amount: ");
-}
+    if (exchangeCurrency === null) {
+        return console.log("\nInvalid input.")
+    };
+    if (exchangeRatesToPHP.get(exchangeCurrency) === 0) {
+        return console.log(`\n${exchangeCurrency} exchange rate hasn't been set.`);
+    };
+
+    exchangeAmount = sourceAmount * exchangeRatesToPHP.get(sourceCurrency) / exchangeRatesToPHP.get(exchangeCurrency);
+    console.log(`Exchange Amount: ${roundValueToString(exchangeAmount)}`);
+};
 
 async function recordExchangeRate() {
     console.log("Record Exchange Rate\n");
     printCurrencies();
     
-    let currency = await getInput("Select Foreign Currency: ");
-    let newRate = await getInput("Exchange Rate: ");
+    let currency = Number(await getInput("Select Foreign Currency: "));
+    currency = getCurrency(currency);
 
-    exchangeRatesToPHP[currency] = newRate; // input
-}
+    if (currency === null) {
+        return console.log("\nInvalid input.")
+    };
+
+    let newRate = Number(await getInput("Exchange Rate: "));
+    
+    if (!newRate || newRate <= 0) {
+        return console.log("\nInvalid input.")
+    };
+
+    exchangeRatesToPHP.set(currency, roundValue(newRate));
+};
 
 async function showInterestComputation() {
     console.log("Show Interest Amount");
-    console.log(account.details + "Interest Rate: 5%\n");
+    account.details();
+    console.log("Interest Rate: 5%\n");
     
-    console.log("Total Number of Days: ");
-    // input & validation
+    days = Number(await getInput("Total Number of Days: "));
 
-    let { balance } = account;
+    if (days <= 0) {
+        return console.log("\nInvalid input.")
+    };
 
-    //
+    let balance = roundValue(account.balance);
 
-}
+    console.log("\nDay | Interest | Balance |");
+
+    for (let i = 0; i < days; i++) {
+        let interest = roundValue(balance * 0.05 / 365);
+        balance = roundValue(balance + interest);
+        console.log(`${padNumber(i + 1, 3)} | ${padNumber(interest, 8)} | ${padNumber(roundValueToString(balance), 7)} |`);
+    }
+
+    //Daily Interest = (End-of-Day Balance) x (Annual Interest Rate / 365)
+
+};
 
 // Interest Amount
 
@@ -182,7 +235,7 @@ function printMainMenu() {
     console.log("[4] Currency Exchange");
     console.log("[5] Record Exchange Rates");
     console.log("[6] Show Interest Computation\n");
-}
+};
 
 let option;
 
@@ -192,36 +245,31 @@ async function mainMenu() {
         option = await getInput("Enter option: ");
         console.log();
         
-        try {
-            switch (Number(option)) {
-                case 1: 
-                    await registerAccountName();
-                    break;
-                case 2:
-                    await depositAmount();
-                    break;
-                case 3:
-                    await withdrawAmount();
-                    break;
-                case 4:
-                    await currencyExchange();
-                    break;
-                case 5:
-                    await recordExchangeRate();
-                    break;
-                case 6:
-                    await showInterestComputation();
-                    break;
-                default:
-                    console.log("Invalid input.\n");
-                    break;
-            }
-        } catch (err) {
-            console.log(err);
-            //console.log("Invalid input.\n");
+        switch (Number(option)) {
+            case 1: 
+                await registerAccountName();
+                break;
+            case 2:
+                await depositAmount();
+                break;
+            case 3:
+                await withdrawAmount();
+                break;
+            case 4:
+                await currencyExchange();
+                break;
+            case 5:
+                await recordExchangeRate();
+                break;
+            case 6:
+                await showInterestComputation();
+                break;
+            default:
+                console.log("Invalid input.\n");
+                break;
         }
     }
-}
+};
 
 // Start the program by opening the main menu
 mainMenu();
