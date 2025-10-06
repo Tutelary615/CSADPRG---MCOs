@@ -1,11 +1,6 @@
 fun makeDeposit(ac : Account) {
     var depositAmountInput : String = ""
 
-    fun getDepositAmount() {
-        print("Amount to deposit: ")
-        depositAmountInput = readln()
-    }
-
     fun executeDeposit() {
         val depositAmount : Double = depositAmountInput.trim().toDouble()
         ac.deposit(depositAmount)
@@ -17,7 +12,7 @@ fun makeDeposit(ac : Account) {
    do {
 
        displayAccountDetails(ac)
-       getDepositAmount()
+       depositAmountInput = getUserInput("Amount to deposit: ")
 
        if (isValidAmount(depositAmountInput)) {
            executeDeposit()
