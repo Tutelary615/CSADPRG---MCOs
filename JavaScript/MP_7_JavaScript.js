@@ -102,11 +102,13 @@ function printCurrencies() {
 };
 
 async function getConfirmation(option = 0) {
-    let prompt = option === 0
-        ? "Back to the Main Menu (Y/N): "
-        : "Convert another currency (Y/N)? ";
-    
-    let input;
+    let prompt, input;
+
+    if (option === 0) {
+        prompt = "Back to the Main Menu (Y/N): ";
+    } else {
+        prompt = "Convert another currency (Y/N)? ";
+    }
 
     do {
         input = await getInput(prompt);
