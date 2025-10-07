@@ -9,7 +9,7 @@ fun foreignCurrencyExchange(currencies: List<Currency>) {
 
     fun getSourceCurrency() {
         displayAsMenu(currencies)
-        sourceCurrencyInput = getUserInput("Source currency: ")
+        sourceCurrencyInput = getUserInput("Source currency")
         if (!isValidMenuInput(sourceCurrencyInput, currencies.size)) {
             willProceed = false
         } else {
@@ -26,7 +26,7 @@ fun foreignCurrencyExchange(currencies: List<Currency>) {
     fun getExchangeCurrency() {
         println()
         displayAsMenu(currencies)
-        exchangeCurrencyInput = getUserInput("Exchange currency: ")
+        exchangeCurrencyInput = getUserInput("Exchange currency")
         if (!isValidMenuInput(exchangeCurrencyInput, currencies.size)) {
             willProceed = false
         } else {
@@ -42,7 +42,7 @@ fun foreignCurrencyExchange(currencies: List<Currency>) {
 
 
     fun getSourceAmount() {
-        sourceAmountInput = getUserInput("Source amount: ")
+        sourceAmountInput = getUserInput("Source amount")
         if (isValidAmount(sourceAmountInput)) {
             sourceAmount = sourceAmountInput.toDouble()
         } else {

@@ -14,7 +14,7 @@ fun recordExchangesRates(foreignCurrencies: List<Currency>) {
     do {
         println()
         displayAsMenu(foreignCurrencies)
-        selectionInput = getUserInput("Select foreign currency: ")
+        selectionInput = getUserInput("Select foreign currency")
         if (isValidMenuInput(selectionInput, foreignCurrencies.size)) {
             selectedCurrencyIdx = selectionInput.toInt() - 1
             exchangeRateInput = getUserInput("Exchange rate")
