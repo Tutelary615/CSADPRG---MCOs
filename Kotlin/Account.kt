@@ -17,21 +17,15 @@ class Account(accountCurrency: Currency) {
         }
     }
 
-    fun deposit(sourceCurrency: Currency, amount: Double) : Boolean {
+    fun deposit(sourceCurrency: Currency, amount: Double) {
         if (amount > 0.0) {
             balance += amount * sourceCurrency.getExchangeRate();
-            return true
-        } else {
-            return false
         }
     }
 
-   fun withdraw(amount: Double) : Boolean {
+   fun withdraw(amount: Double) {
        if (balance >= amount && amount > 0.0) {
            balance -= amount
-           return true
-       } else {
-           return false
        }
    }
 
