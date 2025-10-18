@@ -129,6 +129,10 @@ async function registerAccountName() {
 };
 
 async function depositAmount() {
+    if (account.name === null) {
+        return console.log("\nPlease register your account first.");
+    }
+
     do {
         console.log("\nDeposit Amount");
         account.details();
@@ -147,6 +151,10 @@ async function depositAmount() {
 };
 
 async function withdrawAmount() {
+    if (account.name === null) {
+        return console.log("\nPlease register your account first.");
+    }
+
     do {
         console.log("\nWithdraw Amount");
         account.details();
