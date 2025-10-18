@@ -29,6 +29,7 @@ function getInput(query) {
     });
 };
 
+// Initialization of exchange rates map
 const exchangeRatesToPHP = new Map([
     ["PHP", 1],
     ["USD", 0],
@@ -55,7 +56,7 @@ function padNumber(value, spaces) {
 }
 
 const account = {
-    name: "user",
+    name: null,
     balance: 0.00,
     
     deposit: function(amount) {
@@ -101,14 +102,10 @@ function printCurrencies() {
     console.log("[6] Chinese Yuan Renminni (CNY)\n");
 };
 
-async function getConfirmation(option = 0) {
+async function returnToMainMenu() {
     let prompt, input;
 
-    if (option === 0) {
-        prompt = "Back to the Main Menu (Y/N): ";
-    } else {
-        prompt = "Convert another currency (Y/N)? ";
-    }
+    prompt = "Return to Main Menu (Y/N)? ";
 
     do {
         input = await getInput(prompt);
@@ -128,7 +125,7 @@ async function registerAccountName() {
         
         account.name = input; // assign input;
         newline();
-    } while (!(await getConfirmation()));
+    } while (!(await returnToMainMenu()));
 };
 
 async function depositAmount() {
@@ -146,7 +143,7 @@ async function depositAmount() {
         }
 
         newline();
-    } while (!(await getConfirmation()));
+    } while (!(await returnToMainMenu()));
 };
 
 async function withdrawAmount() {
@@ -164,7 +161,7 @@ async function withdrawAmount() {
         }
 
         newline();
-    } while (!(await getConfirmation()));
+    } while (!(await returnToMainMenu()));
 };
 
 // Currency Exchange
@@ -209,7 +206,7 @@ async function currencyExchange() {
         exchangeAmount = sourceAmount * exchangeRatesToPHP.get(sourceCurrency) / exchangeRatesToPHP.get(exchangeCurrency);
         console.log(`Exchange Amount: ${roundValueToString(exchangeAmount)}`);
         newline();
-    } while (await getConfirmation(1));
+    } while (!(await returnToMainMenu()));
 };
 
 async function recordExchangeRate() {
@@ -232,7 +229,7 @@ async function recordExchangeRate() {
     
         exchangeRatesToPHP.set(currency, roundValue(newRate));
         newline();
-    } while (!(await getConfirmation()));
+    } while (!(await returnToMainMenu()));
 };
 
 async function showInterestComputation() {
@@ -257,10 +254,8 @@ async function showInterestComputation() {
         }
 
         newline();
-    } while (!(await getConfirmation()));
+    } while (!(await returnToMainMenu()));
 };
-
-// Interest Amount
 
 function printMainMenu() {
     console.log("\nSelect Transaction");
@@ -269,7 +264,8 @@ function printMainMenu() {
     console.log("[3] Withdraw Amount");
     console.log("[4] Currency Exchange");
     console.log("[5] Record Exchange Rates");
-    console.log("[6] Show Interest Computation\n");
+    console.log("[6] Show Interest Computation");
+    console.log("[0] Exit\n");
 };
 
 async function mainMenu() {
@@ -277,23 +273,25 @@ async function mainMenu() {
         printMainMenu();
         let option = await getInput("Enter option: ");
         
-        switch (Number(option)) {
-            case 1: 
+        switch (option) {
+            case '0':
+                rl.close();
+            case '1': 
                 await registerAccountName();
                 break;
-            case 2:
+            case '2':
                 await depositAmount();
                 break;
-            case 3:
+            case '3':
                 await withdrawAmount();
                 break;
-            case 4:
+            case '4':
                 await currencyExchange();
                 break;
-            case 5:
+            case '5':
                 await recordExchangeRate();
                 break;
-            case 6:
+            case '6':
                 await showInterestComputation();
                 break;
             default:
@@ -307,7 +305,7 @@ async function mainMenu() {
 mainMenu();
 
 // Handles the termination of the program
-rl.on('SIGINT', () => {
+rl.on('close', () => {
     console.log("\n\nTerminating program...");
-    rl.close();
+    process.exit(0);
 });
