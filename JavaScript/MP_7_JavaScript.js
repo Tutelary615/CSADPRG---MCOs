@@ -27,7 +27,7 @@ function getInput(query) {
     return new Promise(resolve => {
         rl.question(query, resolve);
     });
-};
+}
 
 // Initialization of exchange rates map
 const exchangeRatesToPHP = new Map([
@@ -45,11 +45,11 @@ function roundValue(value) {
 
 function roundValueToString(value) {
     return value.toFixed(2);
-};
+}
 
 function newline() {
     console.log();
-};
+}
 
 function padNumber(value, spaces) {
     return String(value).padEnd(spaces, ' ');
@@ -79,7 +79,7 @@ const account = {
         console.log("Currency: PHP");
         return "";
     }
-};
+}
 
 function getCurrency(num) {
     switch (num) {
@@ -91,16 +91,17 @@ function getCurrency(num) {
         case 6: return "CNY";
         default: return null;
     }
-};
+}
 
 function printCurrencies() {
-    console.log("[1] Philippine Peso (PHP)");
-    console.log("[2] United States Dollar (USD)");
-    console.log("[3] Japanese Yen (JPY)");
-    console.log("[4] British Pound Sterling (GBP)");
-    console.log("[5] Euro (EUR)");
-    console.log("[6] Chinese Yuan Renminni (CNY)\n");
-};
+    console.log("Exchange Rates to PHP")
+    console.log(`[1] Philippine Peso (PHP)         | ${roundValueToString(exchangeRatesToPHP.get("PHP"))}`);
+    console.log(`[2] United States Dollar (USD)    | ${roundValueToString(exchangeRatesToPHP.get("USD"))}`);
+    console.log(`[3] Japanese Yen (JPY)            | ${roundValueToString(exchangeRatesToPHP.get("JPY"))}`);
+    console.log(`[4] British Pound Sterling (GBP)  | ${roundValueToString(exchangeRatesToPHP.get("GBP"))}`);
+    console.log(`[5] Euro (EUR)                    | ${roundValueToString(exchangeRatesToPHP.get("EUR"))}`);
+    console.log(`[6] Chinese Yuan Renminni (CNY)   | ${roundValueToString(exchangeRatesToPHP.get("CNY"))}\n`);
+}
 
 async function returnToMainMenu() {
     let prompt, input;
@@ -125,8 +126,9 @@ async function registerAccountName() {
         
         account.name = input; // assign input;
         newline();
+        console.log(`Account has been registered with name: ${account.name}`)
     } while (!(await returnToMainMenu()));
-};
+}
 
 async function depositAmount() {
     if (account.name === null) {
@@ -148,7 +150,7 @@ async function depositAmount() {
 
         newline();
     } while (!(await returnToMainMenu()));
-};
+}
 
 async function withdrawAmount() {
     if (account.name === null) {
@@ -170,7 +172,7 @@ async function withdrawAmount() {
 
         newline();
     } while (!(await returnToMainMenu()));
-};
+}
 
 // Currency Exchange
 async function currencyExchange() {
@@ -183,17 +185,20 @@ async function currencyExchange() {
         sourceCurrency = getCurrency(sourceCurrency);
     
         if (sourceCurrency === null) {
-            return console.log("\nInvalid input.");
-        };
+            console.log("\nInvalid input.");
+            continue;
+        }
         if (exchangeRatesToPHP.get(sourceCurrency) === 0) {
-            return console.log(`\n${sourceCurrency} exchange rate hasn't been set.`);
-        };
+            console.log(`\n${sourceCurrency} exchange rate hasn't been set.`);
+            continue;
+        }
     
         let sourceAmount = Number(await getInput("Source Amount: "));
         
         if (!sourceAmount || sourceAmount <= 0) {
-            return console.log("\nInvalid input.");
-        };
+            console.log("\nInvalid input.");
+            continue;
+        }
     
         console.log("\nExchange Currency Options:");
         printCurrencies();
@@ -202,20 +207,23 @@ async function currencyExchange() {
         exchangeCurrency = getCurrency(exchangeCurrency);
     
         if (exchangeCurrency === null) {
-            return console.log("\nInvalid input.");
-        };
+            console.log("\nInvalid input.");
+            continue;
+        }
         if (exchangeRatesToPHP.get(exchangeCurrency) === 0) {
-            return console.log(`\n${exchangeCurrency} exchange rate hasn't been set.`);
-        };
+            console.log(`\n${exchangeCurrency} exchange rate hasn't been set.`);
+            continue;
+        }
         if (sourceCurrency === exchangeCurrency) {
-            return console.log("Converting to same currency denied.");
+            console.log("Converting to same currency denied.");
+            continue;
         }
     
         exchangeAmount = sourceAmount * exchangeRatesToPHP.get(sourceCurrency) / exchangeRatesToPHP.get(exchangeCurrency);
         console.log(`Exchange Amount: ${roundValueToString(exchangeAmount)}`);
         newline();
     } while (!(await returnToMainMenu()));
-};
+}
 
 async function recordExchangeRate() {
     do {
@@ -226,21 +234,35 @@ async function recordExchangeRate() {
         currency = getCurrency(currency);
     
         if (currency === null) {
-            return console.log("\nInvalid input.");
-        };
+            console.log("\nInvalid input.");
+            continue;
+        }
+        if (currency === "PHP") {
+            console.log("\nPHP exchange rate cannot be changed.");
+            continue;
+        }
     
         let newRate = Number(await getInput("Exchange Rate: "));
         
-        if (!newRate || newRate <= 0) {
-            return console.log("\nInvalid input.");
-        };
+        if (newRate <= 0 || !newRate) {
+            console.log("\nInvalid input.");
+            continue;
+        }
     
         exchangeRatesToPHP.set(currency, roundValue(newRate));
         newline();
+        console.log("Exchange rate has been successfully set.");
     } while (!(await returnToMainMenu()));
-};
+}
 
 async function showInterestComputation() {
+    if (account.name === null) {
+        return console.log("\nPlease register your account first.");
+    }
+    if (account.balance === 0) {
+        return console.log("\nAccount balance is PHP 0.00.");
+    }
+
     do {
         console.log("\nShow Interest Amount");
         account.details();
@@ -263,7 +285,7 @@ async function showInterestComputation() {
 
         newline();
     } while (!(await returnToMainMenu()));
-};
+}
 
 function printMainMenu() {
     console.log("\nSelect Transaction");
@@ -274,7 +296,7 @@ function printMainMenu() {
     console.log("[5] Record Exchange Rates");
     console.log("[6] Show Interest Computation");
     console.log("[0] Exit\n");
-};
+}
 
 async function mainMenu() {
     while (true) {
@@ -307,7 +329,7 @@ async function mainMenu() {
                 break;
         }
     }
-};
+}
 
 // Start the program by opening the main menu
 mainMenu();
@@ -316,4 +338,4 @@ mainMenu();
 rl.on('close', () => {
     console.log("\n\nTerminating program...");
     process.exit(0);
-});
+})
