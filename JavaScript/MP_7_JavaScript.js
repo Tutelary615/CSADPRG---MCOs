@@ -13,6 +13,9 @@
     4. Press Ctrl + C to terminate the program. 
 *********************/
 
+// ADD ENTER TO INSTRUCTIONS (ENTER AMOUNT)
+// ADD COMMENTS
+
 const readline = require('readline');
 
 // Interface for reading input
@@ -115,9 +118,9 @@ async function returnToMainMenu() {
     return input === "Y";
 } 
 
-async function registerAccountName() {
+async function registerAccount() {
     do {
-        console.log("\nRegister Account Name");
+        console.log("\nRegister Account");
     
         let input;
         do {
@@ -289,7 +292,7 @@ async function showInterestComputation() {
 
 function printMainMenu() {
     console.log("\nSelect Transaction");
-    console.log("[1] Register Account Name");
+    console.log("[1] Register Account");
     console.log("[2] Deposit Amount");
     console.log("[3] Withdraw Amount");
     console.log("[4] Currency Exchange");
@@ -307,7 +310,7 @@ async function mainMenu() {
             case '0':
                 rl.close();
             case '1': 
-                await registerAccountName();
+                await registerAccount();
                 break;
             case '2':
                 await depositAmount();
