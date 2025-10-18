@@ -1,3 +1,7 @@
+/**
+ * contains all functions and procedures required for deposit feature
+ * @param ac account to deposit to
+ */
 fun depositAmount(ac : Account) {
     var depositAmountInput : String = ""
 
