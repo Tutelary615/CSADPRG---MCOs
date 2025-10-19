@@ -280,6 +280,7 @@ async function showInterestComputation() {
         if (days > 0) {
             let balance = roundValue(account.balance);
             console.log("\nDay    | Interest     | Balance      |");
+            console.log("----------------------------------------");
             
             for (let i = 0; i < days; i++) {
                 let interest = roundValue(balance * 0.05 / 365);
