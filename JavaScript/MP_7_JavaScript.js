@@ -296,6 +296,7 @@ async function showInterestComputation() {
 }
 
 function printMainMenu() {
+    console.log("\nWelcome to JS Bank!");
     console.log("\nSelect Transaction");
     console.log("[1] Register Account");
     console.log("[2] Deposit Amount");
