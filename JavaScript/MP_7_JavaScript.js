@@ -124,7 +124,7 @@ async function registerAccount() {
     
         let input;
         do {
-            input = await getInput("Account Name: ");
+            input = await getInput("Enter Account Name: ");
         } while (input === "");
         
         account.name = input; // assign input;
@@ -143,7 +143,8 @@ async function depositAmount() {
         account.details();
         newline();
         
-        let input = Number(await getInput("Deposit Amount: "));
+        let input = Number(await getInput("Enter Deposit Amount: "));
+        newline();
 
         if (input > 0) {
             account.deposit(Number(input));
@@ -165,8 +166,9 @@ async function withdrawAmount() {
         account.details();
         newline();
         
-        let input = Number(await getInput("Deposit Amount: "));
-    
+        let input = Number(await getInput("Enter Withdraw Amount: "));
+        newline();
+
         if (input > 0) {
             account.withdraw(Number(input));
         } else {
@@ -181,10 +183,10 @@ async function withdrawAmount() {
 async function currencyExchange() {
     do {
         console.log("\nForeign Currency Exchange");
-        console.log("Source Currency Option:");
+        console.log("Source Currency Options:");
         printCurrencies();
     
-        let sourceCurrency = Number(await getInput("Source Currency: "));
+        let sourceCurrency = Number(await getInput("Enter Source Currency: "));
         sourceCurrency = getCurrency(sourceCurrency);
     
         if (sourceCurrency === null) {
@@ -196,7 +198,7 @@ async function currencyExchange() {
             continue;
         }
     
-        let sourceAmount = Number(await getInput("Source Amount: "));
+        let sourceAmount = Number(await getInput(`Enter Source Amount (in ${sourceCurrency}): `));
         
         if (!sourceAmount || sourceAmount <= 0) {
             console.log("\nInvalid input.");
@@ -206,7 +208,7 @@ async function currencyExchange() {
         console.log("\nExchange Currency Options:");
         printCurrencies();
     
-        let exchangeCurrency = Number(await getInput("Exchange Currency: "));
+        let exchangeCurrency = Number(await getInput("Enter Exchange Currency: "));
         exchangeCurrency = getCurrency(exchangeCurrency);
     
         if (exchangeCurrency === null) {
@@ -218,10 +220,11 @@ async function currencyExchange() {
             continue;
         }
         if (sourceCurrency === exchangeCurrency) {
-            console.log("Converting to same currency denied.");
+            console.log(`Converting to same currency (${sourceCurrency} -> ${exchangeCurrency}) denied.`);
             continue;
         }
     
+        newline();
         exchangeAmount = sourceAmount * exchangeRatesToPHP.get(sourceCurrency) / exchangeRatesToPHP.get(exchangeCurrency);
         console.log(`Exchange Amount: ${roundValueToString(exchangeAmount)}`);
         newline();
@@ -241,17 +244,18 @@ async function recordExchangeRate() {
             continue;
         }
         if (currency === "PHP") {
-            console.log("\nPHP exchange rate cannot be changed.");
+            console.log("\nPHP exchange rate must not be changed.");
             continue;
         }
     
-        let newRate = Number(await getInput("Exchange Rate: "));
+        let newRate = Number(await getInput("Select Exchange Rate: "));
         
         if (newRate <= 0 || !newRate) {
             console.log("\nInvalid input.");
             continue;
         }
     
+        newline();
         exchangeRatesToPHP.set(currency, roundValue(newRate));
         newline();
         console.log("Exchange rate has been successfully set.");
@@ -271,16 +275,16 @@ async function showInterestComputation() {
         account.details();
         console.log("Interest Rate: 5%\n");
         
-        days = Number(await getInput("Total Number of Days: "));
+        days = Number(await getInput("Enter Duration of Interest (in Days): "));
         
         if (days > 0) {
             let balance = roundValue(account.balance);
-            console.log("\nDay | Interest | Balance |");
+            console.log("\nDay    | Interest     | Balance      |");
             
             for (let i = 0; i < days; i++) {
                 let interest = roundValue(balance * 0.05 / 365);
                 balance = roundValue(balance + interest);
-                console.log(`${padNumber(i + 1, 3)} | ${padNumber(interest, 8)} | ${padNumber(roundValueToString(balance), 7)} |`);
+                console.log(`${padNumber(i + 1, 6)} | ${padNumber(interest, 12)} | ${padNumber(roundValueToString(balance), 12)} |`);
             }
         } else {
             console.log("\nInvalid input.");
