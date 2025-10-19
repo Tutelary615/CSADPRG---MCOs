@@ -86,12 +86,12 @@ const account = {
 
 function getCurrency(num) {
     switch (num) {
-        case 1: return "PHP";
-        case 2: return "USD";
-        case 3: return "JPY";
-        case 4: return "GBP";
-        case 5: return "EUR";
-        case 6: return "CNY";
+        case '1': return "PHP";
+        case '2': return "USD";
+        case '3': return "JPY";
+        case '4': return "GBP";
+        case '5': return "EUR";
+        case '6': return "CNY";
         default: return null;
     }
 }
@@ -113,6 +113,7 @@ async function returnToMainMenu() {
 
     do {
         input = await getInput(prompt);
+        input = input.toUpperCase();
     } while (input !== "Y" && input !== "N");
 
     return input === "Y";
@@ -149,7 +150,7 @@ async function depositAmount() {
         if (input > 0) {
             account.deposit(Number(input));
         } else {
-            console.log("\nInvalid input.");
+            console.log("Invalid input.");
         }
 
         newline();
@@ -172,7 +173,7 @@ async function withdrawAmount() {
         if (input > 0) {
             account.withdraw(Number(input));
         } else {
-            console.log("\nInvalid input.");
+            console.log("Invalid input.");
         }
 
         newline();
@@ -181,12 +182,24 @@ async function withdrawAmount() {
 
 // Currency Exchange
 async function currencyExchange() {
+    let ctrZero = 0;
+
+    for (const value of exchangeRatesToPHP.values()) {
+        if (value === 0) {
+            ctrZero++;
+        }
+    }
+
+    if (ctrZero >= 5) {
+        return console.log("\nPlease set an exchange rate first.");
+    }
+
     do {
         console.log("\nForeign Currency Exchange");
         console.log("Source Currency Options:");
         printCurrencies();
     
-        let sourceCurrency = Number(await getInput("Enter Source Currency: "));
+        let sourceCurrency = await getInput("Enter Source Currency: ");
         sourceCurrency = getCurrency(sourceCurrency);
     
         if (sourceCurrency === null) {
@@ -208,7 +221,7 @@ async function currencyExchange() {
         console.log("\nExchange Currency Options:");
         printCurrencies();
     
-        let exchangeCurrency = Number(await getInput("Enter Exchange Currency: "));
+        let exchangeCurrency = await getInput("Enter Exchange Currency: ");
         exchangeCurrency = getCurrency(exchangeCurrency);
     
         if (exchangeCurrency === null) {
@@ -232,11 +245,13 @@ async function currencyExchange() {
 }
 
 async function recordExchangeRate() {
+    
+
     do {
         console.log("\nRecord Exchange Rate\n");
         printCurrencies();
         
-        let currency = Number(await getInput("Select Foreign Currency: "));
+        let currency = await getInput("Select Foreign Currency: ");
         currency = getCurrency(currency);
     
         if (currency === null) {
@@ -275,9 +290,10 @@ async function showInterestComputation() {
         account.details();
         console.log("Interest Rate: 5%\n");
         
-        days = Number(await getInput("Enter Duration of Interest (in Days): "));
+        daysInput = await getInput("Enter Duration of Interest (in Days): ");
+        days = Number(daysInput);
         
-        if (days > 0) {
+        if (days > 0 && days % 1 == 0 && !daysInput.includes(".")) {
             let balance = roundValue(account.balance);
             console.log("\nDay    | Interest     | Balance      |");
             console.log("----------------------------------------");
