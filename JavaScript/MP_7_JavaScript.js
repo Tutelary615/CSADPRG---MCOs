@@ -13,7 +13,7 @@
     4. Press Ctrl + C to terminate the program. 
 *********************/
 
-// ADD ENTER TO INSTRUCTIONS (ENTER AMOUNT)
+// ADD VALIDATION FOR VALUES
 // ADD COMMENTS
 
 const readline = require('readline');
@@ -25,7 +25,12 @@ const rl = readline.createInterface({
     prompt: ''
 });
 
-// Promise-based function that gets user input
+/**
+ * @function getInput
+ * @description promise-based function that gets user input
+ * @param query prompt to be displayed to the user
+ * @returns Promise of the output
+ */
 function getInput(query) {
     return new Promise(resolve => {
         rl.question(query, resolve);
@@ -42,22 +47,58 @@ const exchangeRatesToPHP = new Map([
     ["CNY", 0]
 ]);
 
+/**
+ * @function roundValue
+ * @description rounds a value to 2 decimals and returns it as a Number
+ * @param value value to be rounded
+ * @returns value rounded to 2 decimals
+ */
 function roundValue(value) {
     return Math.round(value * 100) / 100;
 }
 
+/**
+ * @function roundValueToString
+ * @description rounds a value to 2 decimals and returns it as a String
+ * @param value value to be rounded
+ * @returns string of value rounded to 2 decimals 
+ */
 function roundValueToString(value) {
     return value.toFixed(2);
 }
 
+/**
+ * @function newline
+ * @description prints a newline
+ */
 function newline() {
     console.log();
 }
 
+/**
+ * @function padNumber
+ * @description adds left padding to the value
+ * @param value value to be padded
+ * @param spaces number of spaces of padding
+ * @returns string of value with left padding
+ */
 function padNumber(value, spaces) {
     return String(value).padEnd(spaces, ' ');
 }
 
+/**
+ * @function isValidValueInput
+ * @description checks if the input value is valid (0 or 2 decimal spaces)
+ * @param input input to be validated
+ * @returns true if valid, false otherwise
+ */
+function isValidValueInput(input) {
+    i = input.indexOf('.');
+    len = input.length
+    return (i != -1 && len - i == 3) || i == -1;
+}
+
+// Object containing the user details
 const account = {
     name: null,
     balance: 0.00,
@@ -84,6 +125,12 @@ const account = {
     }
 }
 
+/**
+ * @function getCurrency
+ * @description gets the currency corresponding to the input
+ * @param num input of the user
+ * @returns corresponding currency, null otherwise
+ */
 function getCurrency(num) {
     switch (num) {
         case '1': return "PHP";
@@ -96,6 +143,10 @@ function getCurrency(num) {
     }
 }
 
+/**
+ * @function printCurrencies
+ * @description prints exchange rates of currencies to PHP
+ */
 function printCurrencies() {
     console.log("Exchange Rates to PHP")
     console.log(`[1] Philippine Peso (PHP)         | ${roundValueToString(exchangeRatesToPHP.get("PHP"))}`);
@@ -106,6 +157,11 @@ function printCurrencies() {
     console.log(`[6] Chinese Yuan Renminni (CNY)   | ${roundValueToString(exchangeRatesToPHP.get("CNY"))}\n`);
 }
 
+/**
+ * @function returnToMainMenu
+ * @description prompts the user if return to main menu
+ * @returns true if yes, false otherwise
+ */
 async function returnToMainMenu() {
     let prompt, input;
 
@@ -119,22 +175,33 @@ async function returnToMainMenu() {
     return input === "Y";
 } 
 
+/**
+ * @function registerAccount
+ * @description registers the account of the user, inclusive of account name
+ */
 async function registerAccount() {
     do {
         console.log("\nRegister Account");
     
         let input;
+
+        // loop while input is invalid
         do {
             input = await getInput("Enter Account Name: ");
         } while (input === "");
         
-        account.name = input; // assign input;
+        account.name = input;
         newline();
         console.log(`Account has been registered with name: ${account.name}`)
     } while (!(await returnToMainMenu()));
 }
 
+/**
+ * @function depositAmount
+ * @description deposits an amount specified by the user to the account
+ */
 async function depositAmount() {
+    // checks if account is registered
     if (account.name === null) {
         return console.log("\nPlease register your account first.");
     }
@@ -144,11 +211,13 @@ async function depositAmount() {
         account.details();
         newline();
         
-        let input = Number(await getInput("Enter Deposit Amount: "));
+        // stores input as string and number separately for validation
+        let input = await getInput("Enter Deposit Amount: ");
+        let value = Number(input);
         newline();
 
-        if (input > 0) {
-            account.deposit(Number(input));
+        if (value > 0 && isValidValueInput(input)) {
+            account.deposit(value); // deposits amount
         } else {
             console.log("Invalid input.");
         }
@@ -157,7 +226,12 @@ async function depositAmount() {
     } while (!(await returnToMainMenu()));
 }
 
+/**
+ * @function withdrawAmount
+ * @description withdraws an amount specified by the user from the account
+ */
 async function withdrawAmount() {
+    // checks if account is registered
     if (account.name === null) {
         return console.log("\nPlease register your account first.");
     }
@@ -167,11 +241,13 @@ async function withdrawAmount() {
         account.details();
         newline();
         
-        let input = Number(await getInput("Enter Withdraw Amount: "));
+        // stores input as string and number separately for validation
+        let input = await getInput("Enter Withdraw Amount: ");
+        let value = Number(input)
         newline();
 
-        if (input > 0) {
-            account.withdraw(Number(input));
+        if (value > 0 && isValidValueInput(input)) {
+            account.withdraw(value); //withdraws amount
         } else {
             console.log("Invalid input.");
         }
@@ -180,10 +256,14 @@ async function withdrawAmount() {
     } while (!(await returnToMainMenu()));
 }
 
-// Currency Exchange
+/**
+ * @function currencyExchange
+ * @description allows user to see how currency is exchanged
+ */
 async function currencyExchange() {
     let ctrZero = 0;
 
+    // checks if there are at least 2 exchange rates declared (including PHP)
     for (const value of exchangeRatesToPHP.values()) {
         if (value === 0) {
             ctrZero++;
@@ -199,6 +279,7 @@ async function currencyExchange() {
         console.log("Source Currency Options:");
         printCurrencies();
     
+        // source currency
         let sourceCurrency = await getInput("Enter Source Currency: ");
         sourceCurrency = getCurrency(sourceCurrency);
     
@@ -211,9 +292,11 @@ async function currencyExchange() {
             continue;
         }
     
-        let sourceAmount = Number(await getInput(`Enter Source Amount (in ${sourceCurrency}): `));
+        // source amount
+        let sourceAmountInput = await getInput(`Enter Source Amount (in ${sourceCurrency}): `);
+        let sourceAmount = Number(sourceAmountInput);
         
-        if (!sourceAmount || sourceAmount <= 0) {
+        if (!sourceAmount || sourceAmount <= 0 || !isValidValueInput(sourceAmountInput)) {
             console.log("\nInvalid input.");
             continue;
         }
@@ -221,6 +304,7 @@ async function currencyExchange() {
         console.log("\nExchange Currency Options:");
         printCurrencies();
     
+        // exchange currency
         let exchangeCurrency = await getInput("Enter Exchange Currency: ");
         exchangeCurrency = getCurrency(exchangeCurrency);
     
@@ -238,19 +322,23 @@ async function currencyExchange() {
         }
     
         newline();
+        // computation and display of exchange amount
         exchangeAmount = sourceAmount * exchangeRatesToPHP.get(sourceCurrency) / exchangeRatesToPHP.get(exchangeCurrency);
         console.log(`Exchange Amount: ${roundValueToString(exchangeAmount)}`);
         newline();
     } while (!(await returnToMainMenu()));
 }
 
+/**
+ * @function recordExchangeRate
+ * @description records exchange rates set by the user
+ */
 async function recordExchangeRate() {
-    
-
     do {
         console.log("\nRecord Exchange Rate\n");
         printCurrencies();
         
+        // currency to record exchange
         let currency = await getInput("Select Foreign Currency: ");
         currency = getCurrency(currency);
     
@@ -263,21 +351,27 @@ async function recordExchangeRate() {
             continue;
         }
     
-        let newRate = Number(await getInput("Select Exchange Rate: "));
+        // exchange rate
+        let newRateInput = await getInput("Select Exchange Rate: ");
+        let newRate = Number(newRateInput)
         
-        if (newRate <= 0 || !newRate) {
+        if (!newRate || newRate <= 0 || !isValidValueInput(newRateInput)) {
             console.log("\nInvalid input.");
             continue;
         }
     
-        newline();
         exchangeRatesToPHP.set(currency, roundValue(newRate));
         newline();
         console.log("Exchange rate has been successfully set.");
     } while (!(await returnToMainMenu()));
 }
 
+/**
+ * @function showInterestComputation
+ * @description displays interest depending on the time period indicated by the user
+ */
 async function showInterestComputation() {
+    // checks if the account is registered and has withstanding balance
     if (account.name === null) {
         return console.log("\nPlease register your account first.");
     }
@@ -295,13 +389,14 @@ async function showInterestComputation() {
         
         if (days > 0 && days % 1 == 0 && !daysInput.includes(".")) {
             let balance = roundValue(account.balance);
-            console.log("\nDay    | Interest     | Balance      |");
-            console.log("----------------------------------------");
+            console.log("\nDay    | Interest       | Balance        |");
+            console.log("--------------------------------------------");
             
+            // computation of daily interest
             for (let i = 0; i < days; i++) {
                 let interest = roundValue(balance * 0.05 / 365);
                 balance = roundValue(balance + interest);
-                console.log(`${padNumber(i + 1, 6)} | ${padNumber(interest, 12)} | ${padNumber(roundValueToString(balance), 12)} |`);
+                console.log(`${padNumber(i + 1, 6)} | ${padNumber(interest, 14)} | ${padNumber(roundValueToString(balance), 14)} |`);
             }
         } else {
             console.log("\nInvalid input.");
@@ -311,6 +406,10 @@ async function showInterestComputation() {
     } while (!(await returnToMainMenu()));
 }
 
+/**
+ * @function printMainMenu
+ * @description prints the main menu
+ */
 function printMainMenu() {
     console.log("\nWelcome to JS Bank!");
     console.log("\nSelect Transaction");
@@ -323,6 +422,10 @@ function printMainMenu() {
     console.log("[0] Exit\n");
 }
 
+/**
+ * @function mainMenu
+ * @description executes the main menu
+ */
 async function mainMenu() {
     while (true) {
         printMainMenu();
@@ -359,7 +462,7 @@ async function mainMenu() {
 // Start the program by opening the main menu
 mainMenu();
 
-// Handles the termination of the program
+// Handles the termination of the program via Ctrl + C or main menu
 rl.on('close', () => {
     console.log("\n\nTerminating program...");
     process.exit(0);
