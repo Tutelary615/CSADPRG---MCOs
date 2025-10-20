@@ -1,7 +1,7 @@
 
 use std::io::{self, Write};
 
-// data structure to record exchange rates
+// structure to record exchange rates
 struct ExchangeRates {
     php: Option<f64>,
     usd: Option<f64>,
@@ -23,7 +23,7 @@ impl ExchangeRates {
             cny: None,
         }
     }
-
+    // setter method to set new exchange rate
     fn set_rate(&mut self, code: &str, rate: f64) {
         match code {
             "PHP" => self.php = Some(rate),
@@ -35,7 +35,7 @@ impl ExchangeRates {
             _ => println!("Unknown currency code"),
         }
     }
-
+    // getter method to get specified exchange rate
     fn get_rate(&self, code: &str) -> Option<f64> {
         match code {
             "PHP" => self.php,
@@ -58,23 +58,26 @@ struct Account {
 
 // methods for each account
 impl Account {
+
+    // creates a new account with balance 0
     fn new(name: String) -> Self {
         Account { name, balance: 0.0 }
     }
-
+    
     fn deposit(&mut self, amount: f64) {
         self.balance += amount;
     }
 
     fn withdraw(&mut self, amount: f64) -> bool {
-        if amount <= self.balance {
+        if amount <= self.balance { //checks if account contains sufficient funds
             self.balance -= amount;
             true
         } else {
             false
         }
     }
-
+ 
+    // getter method to get current account balance
     fn get_balance(&self) -> f64 {
         self.balance
     }
@@ -82,8 +85,8 @@ impl Account {
 
 
 fn main() {
-    let mut accounts: Vec<Account> = Vec::new();
-    let mut rates = ExchangeRates::new();
+    let mut accounts: Vec<Account> = Vec::new(); // initializes array made of accounts
+    let mut rates = ExchangeRates::new(); // initalizes exchange rate record
     main_menu(&mut accounts, &mut rates);
 }
 
@@ -122,8 +125,8 @@ fn register_account(accounts: &mut Vec<Account>) {
 
     loop {
         println!("Register Account Name");
-        let name = get_input("Account Name:");
-        accounts.push(Account::new(name));
+        let name = get_input("Account Name:"); // gets user input
+        accounts.push(Account::new(name)); // adds to current account list
 
         let action = get_input("\nBack to the Main Menu (Y/N): ");
 
@@ -142,15 +145,16 @@ fn deposit_amount(accounts: &mut Vec<Account>) {
 
     loop {
         println!("Deposit Amount");
-        let name = get_input("Account Name:");
+        let name = get_input("Account Name:"); // gets user input
 
-        // Find account
+        // Checks if specified account exists
         if let Some(acc) = accounts.iter_mut().find(|a| a.name == name) {
             
             println!("Current Balance: {:.2}", acc.get_balance());
             println!("Currency: PHP\n");
             let amount_str = get_input("Deposit Amount:");
             
+            //checks if amount is convertible to float
             match amount_str.trim().parse::<f64>() {
 
                 Ok(amount) => {
@@ -188,13 +192,14 @@ fn withdraw_amount(accounts: &mut Vec<Account>) {
         println!("Withdraw Amount");
         let name = get_input("Account Name:");
 
-        // Find account
+        // Checks if account exists
         if let Some(acc) = accounts.iter_mut().find(|a| a.name == name) {
-            println!("Current Balance: {:.2}", acc.get_balance());
+            println!("Current Balance: {:.2}", acc.get_balance()); 
             println!("Currency: PHP\n");
 
             let amount_str = get_input("Withdraw Amount:");
             
+            // Checks if amount is convertible to float
             match amount_str.trim().parse::<f64>() {
                 Ok(amount) if (acc.withdraw(amount)) => {
 
@@ -238,7 +243,7 @@ fn currency_exchange(rates: &ExchangeRates) {
 
         print_currency_menu();
         
-        let source: u8 = get_number("Source Currency: ");
+        let source: u8 = get_number("Source Currency: "); // gets numerical input for choices
         let source_code = match source {
             1 => "PHP",
             2 => "USD",
@@ -258,6 +263,7 @@ fn currency_exchange(rates: &ExchangeRates) {
         println!("Exchanged Currency Options:");
         print_currency_menu();
 
+        // provide monetary amount in exchange currency
         let exchange: u8 = get_number("Exchange Currency: ");
         let exchange_code = match exchange {
             1 => "PHP",
@@ -277,7 +283,8 @@ fn currency_exchange(rates: &ExchangeRates) {
             return;
         }
 
-        let source_rate = rates.get_rate(source_code);
+        //gets existing rates
+        let source_rate = rates.get_rate(source_code); 
         let target_rate = rates.get_rate(exchange_code);
 
         if source_rate.is_none() || target_rate.is_none() {
@@ -285,6 +292,7 @@ fn currency_exchange(rates: &ExchangeRates) {
             return;
         }
 
+        // extracts value from Option<T>
         let source_rate = source_rate.unwrap();
         let target_rate = target_rate.unwrap();
 
@@ -311,7 +319,7 @@ fn record_exchange_rates(rates: &mut ExchangeRates) {
         print_currency_menu();
 
         
-        let source_choice: u8 = get_number("Select Foreign Currency: ");
+        let source_choice: u8 = get_number("Select Foreign Currency: "); // gets input
         let code = match source_choice {
             1 => "PHP",
             2 => "USD",
@@ -325,12 +333,12 @@ fn record_exchange_rates(rates: &mut ExchangeRates) {
             }
         };
 
-        let rate: f64 = get_number("Exchange Rate: ");
+        let rate: f64 = get_number("Exchange Rate: "); //gets input
 
         //sets rate for specified currency
         rates.set_rate(code, rate);
 
-        let action = get_input("Back to the Main Menu (Y/N): ");
+        let action = get_input("Back to the Main Menu (Y/N): "); // gets input
             
         if action.eq_ignore_ascii_case("Y") {
             break;
@@ -342,13 +350,16 @@ fn record_exchange_rates(rates: &mut ExchangeRates) {
 fn show_interest_computation(accounts: &Vec<Account>) {
     println!("Show Interest Computation");
 
+    //checks if there are existing accounts
     if accounts.is_empty(){
         println!("No Accounts stored yet");
         return;
     }
 
     loop {
-        let name = get_input("Account Name:");
+        let name = get_input("Account Name:"); 
+
+        // attempts to find account in accounts
         if let Some(acc) = accounts.iter().find(|a| a.name == name) {
                 let mut balance = acc.get_balance();
                 let rate = 0.05;
@@ -361,6 +372,8 @@ fn show_interest_computation(accounts: &Vec<Account>) {
                 let days: u32 = get_number("Total Number of Days: ");
 
                 println!("Day | Interest | Balance |");
+
+                // calculation for daily interest rate
                 for day in 1..=days{
                      let interest = (balance * daily_rate * 100.0).round() / 100.0;
                     balance = ((balance + interest) * 100.0).round() / 100.0;
@@ -379,6 +392,7 @@ fn show_interest_computation(accounts: &Vec<Account>) {
 
 }
 
+// helper method for number inputs
 fn get_number<T: std::str::FromStr>(prompt: &str) -> T {
     loop {
         let input = get_input(prompt);
@@ -389,6 +403,7 @@ fn get_number<T: std::str::FromStr>(prompt: &str) -> T {
     }
 }
 
+// helper methods for string inputs
 fn get_input(prompt: &str) -> String {
     print!("{} ", prompt);
     io::stdout().flush().unwrap();
