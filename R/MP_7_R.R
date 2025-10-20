@@ -1,5 +1,11 @@
 # Programmed by Antonio Alvaro Almero, Group 7 S11
 
+
+# EXECUTION INSTRUCTIONS
+# Open Command Prompt in the directory of this file
+# Run R console -> source("MP_7_R.R")
+
+
 #################################################
 # UTILITIES - General Display & Input Functions #
 #################################################
