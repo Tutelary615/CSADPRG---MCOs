@@ -61,10 +61,9 @@ class Account(accountCurrency: Currency) {
 
     /**
      * sets the name of the account holder
-     * @param name name that account name will be set to
+     * @param name
      */
     fun setName(name: String) {
         this.name = name
     }
-
 }

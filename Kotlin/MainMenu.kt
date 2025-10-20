@@ -1,3 +1,8 @@
+/**
+ * contains all functions and procedures required for
+ * a. initialization of currencies and account
+ * b. main menu of the program
+ */
 fun mainMenu() {
     val allCurrencies : MutableList<Currency> = mutableListOf<Currency>()
     var foreignCurrencies : MutableList<Currency>
@@ -8,7 +13,7 @@ fun mainMenu() {
     var transactionChoice : String = ""
 
     /**
-     * function for initializing currencies
+     * procedure for initializing currencies
      */
     fun initializeCurrencies() {
         allCurrencies.add(Currency("Philippine Peso", "PHP"))
@@ -21,7 +26,7 @@ fun mainMenu() {
     }
 
     /**
-     * handles getting of transaction choice from user
+     * procedure for getting of transaction choice from user
      */
     fun getTransaction() {
         do {
@@ -29,11 +34,11 @@ fun mainMenu() {
         } while (!isValidMenuInput(transactionChoice, transactions.size))
     }
 
-    // procedures
 
+    // procedures
     initializeCurrencies()
-    ac = Account(allCurrencies[0])      // account currency set to PHP
-    foreignCurrencies = allCurrencies.subList(1, allCurrencies.size) // all currencies except PHP
+    ac = Account(allCurrencies[0])                   // account currency set to PHP
+    foreignCurrencies = allCurrencies.subList(1, allCurrencies.size)  // all currencies except PHP
     do {
         println()
         println("Main Menu")
