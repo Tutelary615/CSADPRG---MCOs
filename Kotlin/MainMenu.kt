@@ -1,4 +1,3 @@
-
 fun mainMenu() {
     val allCurrencies : MutableList<Currency> = mutableListOf<Currency>()
     var foreignCurrencies : MutableList<Currency>
@@ -6,9 +5,11 @@ fun mainMenu() {
     val transactions : List<String> = listOf("Register Account Name", "Deposit Amount", "Withdraw Amount",
                                              "Currency Exchange", "Record Exchange Rates",
                                              "Show Interest Computation", "Exit")
-    var transactionInput : String = ""
+    var transactionChoice : String = ""
 
-
+    /**
+     * function for initializing currencies
+     */
     fun initializeCurrencies() {
         allCurrencies.add(Currency("Philippine Peso", "PHP"))
         allCurrencies[0].setExchangeRate(1.0)
@@ -19,15 +20,20 @@ fun mainMenu() {
         allCurrencies.add(Currency("Chinese Yuan Renminni", "CNY"))
     }
 
+    /**
+     * handles getting of transaction choice from user
+     */
     fun getTransaction() {
         do {
-            transactionInput = getUserInput("Select Transaction")
-        } while (!isValidMenuInput(transactionInput, transactions.size))
+            transactionChoice = getUserInput("Select Transaction")
+        } while (!isValidMenuInput(transactionChoice, transactions.size))
     }
 
+    // procedures
+
     initializeCurrencies()
-    ac = Account(allCurrencies[0])
-    foreignCurrencies = allCurrencies.subList(1, allCurrencies.size)
+    ac = Account(allCurrencies[0])      // account currency set to PHP
+    foreignCurrencies = allCurrencies.subList(1, allCurrencies.size) // all currencies except PHP
     do {
         println()
         println("Main Menu")
@@ -35,7 +41,7 @@ fun mainMenu() {
         getTransaction()
         println()
 
-        when (transactionInput) {
+        when (transactionChoice) {
             "1" -> registerAccountName(ac)
             "2" -> depositAmount(ac)
             "3" -> withdrawAmount(ac)
@@ -43,8 +49,5 @@ fun mainMenu() {
             "5" -> recordExchangesRates(foreignCurrencies)
             "6" -> showInterestAmount(ac)
         }
-
-    } while (transactionInput != "7")
+    } while (transactionChoice != "7")
 }
-
-
