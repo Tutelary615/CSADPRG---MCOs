@@ -1,11 +1,15 @@
+/**
+ * Contains all functions and procedures for registering an account name
+ * @param account account whose name will be registered
+ */
 fun registerAccountName(ac : Account) {
     var nameInput : String = ""
 
     println("Register Account Name")
     do {
-       nameInput = getUserInput("Account name: ")
+       nameInput = getUserInput("Account name")
 
-        if (nameInput != "") {
+        if (!nameInput.isEmpty()) {
             ac.setName(nameInput)
             println("Account name registered")
         } else {
