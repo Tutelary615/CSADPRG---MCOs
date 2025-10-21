@@ -86,5 +86,5 @@ fun foreignCurrencyExchange(currencies: List<Currency>) {
         if (willProceed) {
             executeConversion()
         }
-    } while (willRepeatTransaction("Convert another currency?"))
+    } while (willRepeatTransaction("Convert again?"))
 }
