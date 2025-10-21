@@ -40,7 +40,7 @@ fun recordExchangesRates(foreignCurrencies: List<Currency>) {
         selectionInput = getUserInput("Select foreign currency")
         println()
         if (isValidMenuInput(selectionInput, foreignCurrencies.size)) { // checking if the currency selection is valid
-            exchangeRateInput = getUserInput("Exchange rate (from account currency)")
+            exchangeRateInput = getUserInput("Exchange rate")
 
             if (isValidExchangeAmount()) { // checking if exchange rate entered is valid
                 executeRecordExchangeRate()
