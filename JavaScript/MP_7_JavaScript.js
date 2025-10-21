@@ -13,9 +13,6 @@
     4. Press Ctrl + C to terminate the program. 
 *********************/
 
-// ADD VALIDATION FOR VALUES
-// ADD COMMENTS
-
 const readline = require('readline');
 
 // Interface for reading input
