@@ -5,6 +5,9 @@
 fun depositAmount(ac : Account) {
     var depositAmountInput : String = ""
 
+    /**
+     * executes deposit and prints transaction details
+     */
     fun executeDeposit() {
         val depositAmount : Double = depositAmountInput.trim().toDouble()
         ac.deposit(depositAmount)
@@ -13,8 +16,9 @@ fun depositAmount(ac : Account) {
         println("Deposit Amount: ${String.format("%.2f", depositAmount)}")
         println("Updated Balance: ${String.format("%.2f", ac.getBalance())}")
     }
-    println("Make Deposit")
 
+    // procedure
+    println("Make Deposit")
     do {
        displayAccountDetails(ac)
         println()

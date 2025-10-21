@@ -1,7 +1,14 @@
+/**
+ * contains all functions and procedures required for the withdraw feature
+ * @param ac account to withdraw from
+ */
 fun withdrawAmount(ac : Account) {
     var withdrawAmountInput : String = ""
     var willRepeatTransaction : Boolean = false
 
+    /**
+     * executes withdrawal and prints transaction details
+     */
     fun executeWithdrawal() {
         val withdrawAmount : Double = withdrawAmountInput.trim().toDouble()
         println()
@@ -15,6 +22,7 @@ fun withdrawAmount(ac : Account) {
         }
     }
 
+    // procedure
     println("Make Withdrawal")
     if (ac.getBalance() == 0.00) {
         println("No funds to withdraw (balance: 0.00). Returning to main menu")

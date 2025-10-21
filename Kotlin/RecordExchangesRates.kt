@@ -15,6 +15,7 @@ fun recordExchangesRates(foreignCurrencies: List<Currency>) {
         val selectedCurrencyIdx = selectionInput.toInt() - 1
         newExchangeRate = exchangeRateInput.toDouble()
         foreignCurrencies[selectedCurrencyIdx].setExchangeRate(newExchangeRate)
+        println()
         println("Exchange rate of ${foreignCurrencies[selectedCurrencyIdx].getCurrencyCode()} recorded")
     }
 
@@ -31,6 +32,7 @@ fun recordExchangesRates(foreignCurrencies: List<Currency>) {
                 executeRecordExchangeRate()
             }
         }
+        println()
     } while (willRepeatTransaction("Would you like to record another exchange rate?"))
     println()
 }
