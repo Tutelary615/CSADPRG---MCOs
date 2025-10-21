@@ -60,7 +60,7 @@ fun showInterestAmount(ac : Account) {
             if (isPeriodInputValid()) {
                 displayComputation()
             }
-        } while (willRepeatTransaction("Would you like to repeat this transaction?"))
+        } while (willRepeatTransaction("Would you like to compute again"))
     }
 
 }
