@@ -1,8 +1,11 @@
-# Programmed by Antonio Alvaro Almero, Group 7 S11
+# Last names: Almero, Aquino, Dolot, Marquez
+# Language: R
+# Paradigm(s): Procedural Programming
 
 
-# EXECUTION INSTRUCTIONS
-# Open Command Prompt in the directory of this file
+# HOW TO RUN
+# Download and install R via https://cran.r-project.org/
+# Open Command Prompt in this file's directory
 # Run R console -> source("MP_7_R.R")
 
 
