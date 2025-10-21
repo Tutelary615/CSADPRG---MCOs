@@ -396,7 +396,7 @@ async function showInterestComputation() {
             for (let i = 0; i < days; i++) {
                 let interest = roundValue(balance * 0.05 / 365);
                 balance = roundValue(balance + interest);
-                console.log(`${padNumber(i + 1, 6)} | ${padNumber(interest, 14)} | ${padNumber(roundValueToString(balance), 14)} |`);
+                console.log(`${padNumber(i + 1, 6)} | ${padNumber(roundValueToString(interest), 14)} | ${padNumber(roundValueToString(balance), 14)} |`);
             }
         } else {
             console.log("\nInvalid input.");
