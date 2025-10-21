@@ -1,4 +1,9 @@
-
+/********************
+Last names: ALMERO, AQUINO, DOLOT, MARQUEZ
+Language: Rust
+Paradigm(s): procedural, functional, object-oriented
+********************/
+    
 use std::io::{self, Write};
 
 // structure to record exchange rates
