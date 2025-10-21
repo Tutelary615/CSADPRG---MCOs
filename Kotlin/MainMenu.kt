@@ -42,6 +42,7 @@ fun mainMenu() {
     do {
         println()
         println("Main Menu")
+        println()
         displayAsMenu(transactions)
         getTransaction()
         println()
