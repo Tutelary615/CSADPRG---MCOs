@@ -1,56 +1,58 @@
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.DataRow
-import org.jetbrains.kotlinx.dataframe.api.replace
-import org.jetbrains.kotlinx.dataframe.api.with
-import org.jetbrains.kotlinx.dataframe.api.map
+import org.jetbrains.kotlinx.dataframe.api.*
 import kotlinx.datetime.LocalDate
-import org.jetbrains.kotlinx.dataframe.api.dropNulls
+import kotlinx.datetime.daysUntil
 
-fun String.toDateOrNull() : LocalDate? {
-    val segments: List<String>
-    val month: Int
-    val day: Int
-    val year: Int
-    val date : LocalDate
+fun hasNullExceptMunicipality(row : DataRow<*>) : Boolean {
 
-    try {
-        segments = this.split("/")
-        month = segments[0].toInt()
-        day = segments[1].toInt()
-        year = segments[2].toInt()
-        date = LocalDate(year, month, day)
-
-    } catch (e: Exception) {
-        return null
+    for (cn in row.columnNames()) {
+        if (cn == "Municipality") {
+            continue
+        } else if (row[cn] == null) {
+            return true
+        }
     }
-    return date
+    return false
 }
 
-fun LocalDate.toString() : String {
-    return "${month}/${day}/${year}"
-}
-
-fun cleanData(df : DataFrame<*> ) : DataFrame<*> {
-    var cleanDF: DataFrame<*> = df
-
-
+fun convertNumbers(df : DataFrame<*>) : DataFrame<*> {
+    var convertedDf: DataFrame<*> = df
+    
     // formatting financial fields
-    cleanDF = cleanDF.replace {cols("ApprovedBudgetForContract", "ContractCost")}
+    convertedDf = convertedDf.replace {cols("ApprovedBudgetForContract", "ContractCost")}
         .with{column ->
-            column.map{it.toString().toDoubleOrNull()}}
+              column.map{ it.toString().toDoubleOrNull() }}
 
-    // formatting dates
-    cleanDF = cleanDF.replace { cols("StartDate", "ActualCompletionDate")}
-             .with { column ->
-                 column.map{it.toString().toDateOrNull()}
-             }
+    return convertedDf
+}
 
-    // removing rows with null values
-    cleanDF = cleanDF.dropNulls()
-    return cleanDF
+fun addDerivedFields(df : DataFrame<*>) : DataFrame<*> {
+    var dfWithDerivedFields : DataFrame<*> = df
+
+    dfWithDerivedFields = dfWithDerivedFields
+                          .add("CompletionDelayDays") {
+                            computeCompletionDelayDays(it)
+                        }
+                          .add("CostSavings") {
+                              computeCostSavings(it)
+                         }
+    return dfWithDerivedFields
+}
+
+private fun computeCompletionDelayDays(projectInstance : DataRow<*>) : Int {
+    val startDate : LocalDate = (projectInstance["StartDate"] as LocalDate)
+    val actualCompletionDate : LocalDate = (projectInstance["ActualCompletionDate"] as LocalDate)
+    return actualCompletionDate.daysUntil(startDate)
+}
+
+private fun computeCostSavings(projectInstance : DataRow<*>) : Double {
+    val approvedBudget : Double = (projectInstance["ApprovedBudgetForContract"] as Double)
+    val contractCost : Double = (projectInstance["ContractCost"] as Double)
+    return approvedBudget - contractCost
 }
 
 fun isFrom2021To2023(projectInstance : DataRow<*>) : Boolean {
-    val year : Int = (projectInstance["StartDate"] as LocalDate).year
-    return (year >= 2021 && year <= 2023)
+    val fundingYear : Int = (projectInstance["FundingYear"] as Int)
+    return (fundingYear >= 2021 && fundingYear <= 2023)
 }
