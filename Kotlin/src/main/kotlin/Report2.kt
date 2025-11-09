@@ -7,8 +7,8 @@ import java.text.DecimalFormat
 fun generateReport2(df : DataFrame<*>) : DataFrame<*> {
     val dfGroupedByContractor = df.groupBy("Contractor")
     var report2Df = dfGroupedByContractor.aggregate {
-        sum("ApprovedBudgetForContract") into "TotalCost"
-        count { it["ProjectId"] != null} into "NumProjects"
+        sum("ContractCost") into "TotalCost"
+        rowsCount() into "NumProjects"
         mean("CompletionDelayDays") into "AvgDelay"
         sum("CostSavings") into "TotalSavings"
     }
@@ -18,7 +18,7 @@ fun generateReport2(df : DataFrame<*>) : DataFrame<*> {
     report2Df = report2Df.sortByDesc {it["TotalCost"].convertToDouble()}
     report2Df = report2Df.head(15)
     report2Df = report2Df.insert("Rank") {it.index() + 1}.at(0)
-    report2Df = report2Df.add("RiskFlag") { if ((it["ReliabilityIndex"] as Double) < 5) "HIGH RISK" else ""}
+    report2Df = report2Df.add("RiskFlag") { if ((it["ReliabilityIndex"] as Double) < 5) "HIGH RISK" else "LOW RISK"}
     report2Df = formatReport2(report2Df)
     return report2Df
 }
@@ -38,9 +38,9 @@ private fun computeReliabilityIndex(row : DataRow<*>): Double {
 
 private fun formatReport2(report2Df : DataFrame<*>) : DataFrame<*> {
     var formattedDf : DataFrame<*> = report2Df
-    val currencyFormat = DecimalFormat("#,###.00")
-    val oneDecimalFormat = DecimalFormat("###.#")
-    val twoDecimalFormat = DecimalFormat("###.##")
+    val currencyFormat = DecimalFormat("#,##0.00")
+    val oneDecimalFormat = DecimalFormat("##0.0")
+    val twoDecimalFormat = DecimalFormat("##0.00")
 
     currencyFormat.roundingMode = RoundingMode.HALF_UP
     oneDecimalFormat.roundingMode = RoundingMode.HALF_UP

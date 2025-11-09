@@ -20,9 +20,8 @@ fun convertNumbers(df : DataFrame<*>) : DataFrame<*> {
     var convertedDf: DataFrame<*> = df
     
     // formatting financial fields
-    convertedDf = convertedDf.replace {cols("ApprovedBudgetForContract", "ContractCost")}
-        .with{column ->
-              column.map{ it.toString().toDoubleOrNull() }}
+    convertedDf = convertedDf.replace("ApprovedBudgetForContract", "ContractCost")
+                             .with{column -> column.map{ (it as String).toDoubleOrNull() }}
 
     return convertedDf
 }
