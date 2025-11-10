@@ -39,7 +39,7 @@ fun generateReport1(df : DataFrame<*>) : DataFrame<*>{
 
     report1Df = report1Df.replace { it["EfficiencyScore"] }
                          .with {efficiencyScore -> efficiencyScore.map{scaleEfficiencyScore(it as Double)}}
-    report1Df = report1Df.sortBy("EfficiencyScore")
+    report1Df = report1Df.sortByDesc("EfficiencyScore")
     report1Df = formatReport1(report1Df)
     return report1Df
 }
@@ -51,35 +51,30 @@ private fun computeHighDelayPct(df : DataFrame<*>, mainIsland : String, region: 
     val totalProjects = filteredIslandRegionDf.rowsCount()
     val withDelayOver30  = filteredIslandRegionDf.count { (it["CompletionDelayDays"] as Int) > 30 }
 
-    return (withDelayOver30.toDouble() / totalProjects.toDouble())
+    return (withDelayOver30.toDouble() / totalProjects.toDouble()) * 100
 }
 
 private fun computeEfficiencyScore(row : DataRow<*>) : Double {
     val medianSavings = row["MedianSavings"] as Double
     val averageDelay = row["AvgDelay"] as Double
 
-    return (averageDelay/medianSavings) * 100
+    return (medianSavings / averageDelay) * 100
 }
 
 private fun formatReport1(report1Df : DataFrame<*>) : DataFrame<*>{
     var formattedReport = report1Df
+    val twoDecimalFormat = DecimalFormat("#,##0.00")
 
-    val currencyFormat = DecimalFormat("#,##0.00")
-    val pctFormat = DecimalFormat("##0.00%")
-    val oneDecimalFormat = DecimalFormat("##0.0")
-
-    currencyFormat.roundingMode = RoundingMode.HALF_UP
-    pctFormat.roundingMode = RoundingMode.HALF_UP
-    oneDecimalFormat.roundingMode = RoundingMode.HALF_UP
+    twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 
     formattedReport = formattedReport.replace("TotalBudget", "MedianSavings")
-        .with{ cellVal -> cellVal.map {currencyFormat.format(it)} }
+        .with{ cellVal -> cellVal.map {twoDecimalFormat.format(it)} }
 
     formattedReport = formattedReport.replace("AvgDelay", "EfficiencyScore")
-        .with{ cellVal -> cellVal.map {oneDecimalFormat.format(it)} }
+        .with{ cellVal -> cellVal.map {twoDecimalFormat.format(it)} }
 
     formattedReport = formattedReport.replace("HighDelayPct")
-        .with{ cellVal -> cellVal.map {pctFormat.format(it)} }
+        .with{ cellVal -> cellVal.map {twoDecimalFormat.format(it)} }
 
     return formattedReport
 }
