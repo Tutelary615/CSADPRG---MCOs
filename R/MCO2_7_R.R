@@ -223,8 +223,8 @@ generate_reports <- function(data) {
   summary_stats$total_projects <- counts$ProjectId
   summary_stats$total_contractors <- counts$Contractor
   summary_stats$total_provinces <- counts$Province
-  summary_stats$global_avg_delay <- round(avgs_sums$GlobalAvgDelay, 1)
-  summary_stats$total_savings <- round(avgs_sums$TotalSavings, 2)
+  summary_stats$global_avg_delay <- label_comma(accuracy = 0.01)(avgs_sums$GlobalAvgDelay)
+  summary_stats$total_savings <- label_comma(accuracy = 0.01)(avgs_sums$TotalSavings)
   
   cat("Summary Stats (summary.json):\n")
   cat(toJSON(summary_stats, auto_unbox = TRUE, pretty = TRUE))
