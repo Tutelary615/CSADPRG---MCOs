@@ -72,7 +72,7 @@ load_file <- function() {
       ApprovedBudgetForContract = as.numeric(ApprovedBudgetForContract),
       ContractCost = as.numeric(ContractCost),
       CostSavings = ApprovedBudgetForContract - ContractCost,
-      CompletionDelayDays = as.numeric(StartDate - ActualCompletionDate)
+      CompletionDelayDays = as.numeric(ActualCompletionDate - StartDate)
     )
   
   nrows_valid <- nrow(data)
