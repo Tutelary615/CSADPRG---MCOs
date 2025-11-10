@@ -42,7 +42,7 @@ fun addDerivedFields(df : DataFrame<*>) : DataFrame<*> {
 private fun computeCompletionDelayDays(projectInstance : DataRow<*>) : Int {
     val startDate : LocalDate = (projectInstance["StartDate"] as LocalDate)
     val actualCompletionDate : LocalDate = (projectInstance["ActualCompletionDate"] as LocalDate)
-    return actualCompletionDate.daysUntil(startDate)
+    return startDate.daysUntil(actualCompletionDate)
 }
 
 private fun computeCostSavings(projectInstance : DataRow<*>) : Double {

@@ -1,5 +1,9 @@
 import org.jetbrains.kotlinx.dataframe.DataFrame
+import org.jetbrains.kotlinx.dataframe.DataRow
 import org.jetbrains.kotlinx.dataframe.api.*
+import java.math.BigDecimal
+import kotlin.math.abs
+import kotlin.isNaN
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
@@ -8,12 +12,12 @@ fun generateReport3(df : DataFrame<*>) : DataFrame<*> {
     val dfGrouped = df.groupBy("FundingYear", "TypeOfWork")
 
     report3Df = dfGrouped.aggregate {
-        count { it["ProjectId"] != null } into "TotalProjects"
+        rowsCount() into "TotalProjects"
         mean("CostSavings") into "AvgSavings"
         computeOverrunRate(it as DataFrame<*>) into "OverrunRate"
     }
 
-
+    report3Df = report3Df.add("YoYChange") {computeYoYChange(it, report3Df)}
     report3Df = report3Df.sortBy {it["FundingYear"] and it["AvgSavings"].desc()}
 
     report3Df = formatReport3(report3Df)
@@ -23,29 +27,50 @@ fun generateReport3(df : DataFrame<*>) : DataFrame<*> {
 private fun computeOverrunRate(grouping : DataFrame<*>) : Double {
     val totalProjects : Int = grouping.count()
     val overrunProjects : Int = grouping.count { (it["CostSavings"] as Double) < 0}
-    val overrunRate : Double = overrunProjects.toDouble() / totalProjects.toDouble()
+    val overrunRate : Double = (overrunProjects.toDouble() / totalProjects.toDouble()) * 100
     return overrunRate
 }
 
+private fun computeYoYChange(row : DataRow<*>, df : DataFrame<*>) : Double {
+    val yOYChange: Double
+    val fundingYear : Int = row["FundingYear"] as Int
+    val typeOfWork : String = row["TypeOfWork"] as String
+    val tempDf : DataFrame<*>
+    val prevYearRow : DataRow<*>
 
+    if (fundingYear == 2021) {
+        return 0.0
+    }
+    tempDf = (df.filter { (it["FundingYear"] == fundingYear - 1 ) && it["TypeOfWork"] == typeOfWork})
+
+    if (tempDf.rowsCount() == 0) {
+        return 0.0
+    }
+    prevYearRow = tempDf[0]
+    yOYChange =  (((row["AvgSavings"] as Double) - (prevYearRow["AvgSavings"] as Double)) /
+                 abs(prevYearRow["AvgSavings"] as Double)) * 100
+
+    return yOYChange
+}
 private fun formatReport3(df : DataFrame<*>) : DataFrame<*> {
     var formattedDf: DataFrame<*> = df
 
-    val currencyFormat = DecimalFormat("#,##0.00")
-    val pctFormat = DecimalFormat("##0.00%")
+    val twoDecimalFormat = DecimalFormat("#,##0.00")
     val intWithCommaFormat = DecimalFormat("#,###")
 
-    currencyFormat.roundingMode = RoundingMode.HALF_UP
-    pctFormat.roundingMode = RoundingMode.HALF_UP
+    twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 
     formattedDf = formattedDf.replace("TotalProjects")
                              .with { cellVal -> cellVal.map { intWithCommaFormat.format(it) } }
 
     formattedDf = formattedDf.replace("AvgSavings")
-                             .with { cellVal -> cellVal.map { currencyFormat.format(it) } }
+                             .with { cellVal -> cellVal.map { twoDecimalFormat.format(it) } }
 
     formattedDf = formattedDf.replace("OverrunRate")
-                             .with { cellVal -> cellVal.map { pctFormat.format(it) } }
+                             .with { cellVal -> cellVal.map { twoDecimalFormat.format(it) } }
+
+    formattedDf = formattedDf.replace("YoYChange")
+                             .with { cellVal -> cellVal.map { twoDecimalFormat.format(it) } }
 
     return formattedDf
 }

@@ -32,6 +32,7 @@ fun loadData() : DataFrame<*> {
     var unfilteredDf: DataFrame<*>
     val totalRowsLoaded: Int
     val rowsFiltered: Int
+    val invalidDataFilename : String = "invalid_data.csv"
 
     print("Processing data...")
 
@@ -49,8 +50,10 @@ fun loadData() : DataFrame<*> {
 
     // building dataframe of rows excluded
     excludedDf = unfilteredDf.filter { hasNullExceptMunicipality(it) or !isFrom2021To2023(it) }
+    excludedDf.writeCsv(File(invalidDataFilename))
 
     println("\t$totalRowsLoaded rows loaded, $rowsFiltered rows filtered for 2021-2023")
+    println("Invalid/excluded rows exported to $invalidDataFilename")
     println("Returning to main menu...")
     return filteredDf
 }
