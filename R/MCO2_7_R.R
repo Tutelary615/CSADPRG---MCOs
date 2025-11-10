@@ -72,7 +72,7 @@ load_file <- function() {
       ApprovedBudgetForContract = as.numeric(ApprovedBudgetForContract),
       ContractCost = as.numeric(ContractCost),
       CostSavings = ApprovedBudgetForContract - ContractCost,
-      CompletionDelayDays = as.numeric(StartDate - ActualCompletionDate)
+      CompletionDelayDays = as.numeric(ActualCompletionDate - StartDate)
     )
   
   nrows_valid <- nrow(data)
@@ -113,8 +113,8 @@ generate_reports <- function(data) {
     mutate(
       TotalBudget = label_comma(accuracy = 0.01)(DblTotalBudget),
       MedianSavings = label_comma(accuracy = 0.01)(DblMedianSavings),
-      AvgDelay = label_comma(accuracy = 0.1)(DblAvgDelay),
-      HighDelayPct = percent(DblHighDelayPct, accuracy = 0.01),
+      AvgDelay = label_comma(accuracy = 0.01)(DblAvgDelay),
+      HighDelayPct = label_comma(accuracy = 0.01)(DblHighDelayPct * 100),
       DblEfficiencyScore = 100 * (
         (DblUnscaledEfficiencyScore - min(report_1$DblUnscaledEfficiencyScore)) /
           (max(report_1$DblUnscaledEfficiencyScore) - min(report_1$DblUnscaledEfficiencyScore))
@@ -152,7 +152,7 @@ generate_reports <- function(data) {
     mutate (
       TotalCost = label_comma(accuracy = 0.01)(DblTotalCost),
       NumProjects = label_comma(accuracy = 1)(IntNumProjects),
-      AvgDelay = label_comma(accuracy = 0.1)(DblAvgDelay),
+      AvgDelay = label_comma(accuracy = 0.01)(DblAvgDelay),
       TotalSavings = label_comma(accuracy = 0.01)(DblTotalSavings),
       ReliabilityIndex = label_comma(accuracy = 0.01)(DblReliabilityIndex),
       RiskFlag = ifelse(DblReliabilityIndex < 50, "High Risk", "Low Risk"),
@@ -189,9 +189,9 @@ generate_reports <- function(data) {
     mutate(
       TotalProjects = label_comma(accuracy = 1)(IntTotalProjects),
       AvgSavings = label_comma(accuracy = 0.01)(DblAvgSavings),
-      OverrunRate = percent(DblOverrunRate, accuracy = 0.01),
-      DblYoYChange = ifelse(TypeOfWork == lag(TypeOfWork) & lag(FundingYear) == FundingYear - 1, (DblAvgSavings - lag(DblAvgSavings)) / abs(lag(DblAvgSavings)), NA),
-      YoYChange = label_percent(accuracy = 0.01)(DblYoYChange)
+      OverrunRate = label_comma(accuracy = 0.01)(DblOverrunRate * 100),
+      DblYoYChange = ifelse(!is.na(lag(FundingYear)) & TypeOfWork == lag(TypeOfWork) & lag(FundingYear) == FundingYear - 1, (DblAvgSavings - lag(DblAvgSavings)) / abs(lag(DblAvgSavings)), 0.00),
+      YoYChange = label_comma(accuracy = 0.01)(DblYoYChange * 100)
     ) %>%
     arrange(FundingYear, desc(DblAvgSavings)) %>%
     select(-IntTotalProjects, -DblAvgSavings, -DblOverrunRate, -DblYoYChange)
