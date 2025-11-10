@@ -63,7 +63,7 @@ private fun computeEfficiencyScore(row : DataRow<*>) : Double {
 
 private fun formatReport1(report1Df : DataFrame<*>) : DataFrame<*>{
     var formattedReport = report1Df
-    val twoDecimalFormat = DecimalFormat("##0.00")
+    val twoDecimalFormat = DecimalFormat("#,##0.00")
 
     twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 

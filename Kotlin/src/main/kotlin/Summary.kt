@@ -48,16 +48,15 @@ fun makeSummaryJSONString(map : Map<String, Number>) : String {
 private fun formatSummaryMap(summary : Map<String, Number>) : Map<String, String> {
     val formattedMap: Map<String, String>
 
-    val oneDecimalFormat = DecimalFormat("###.#")
-    val twoDecimalFormat = DecimalFormat("###.##")
-    oneDecimalFormat.roundingMode = RoundingMode.HALF_UP
+
+    val twoDecimalFormat = DecimalFormat("###.00")
     twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 
     formattedMap = mapOf(
         "total_projects" to (summary["total_projects"]).toString(),
         "total_contractors" to (summary["total_contractors"]).toString(),
         "total_provinces" to (summary["total_provinces"]).toString(),
-        "global_avg_delay" to oneDecimalFormat.format(summary["global_avg_delay"]),
+        "global_avg_delay" to twoDecimalFormat.format(summary["global_avg_delay"]),
         "total_savings" to twoDecimalFormat.format(summary["total_savings"])
     )
     return formattedMap
