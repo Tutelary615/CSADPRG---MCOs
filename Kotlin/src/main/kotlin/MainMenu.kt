@@ -14,7 +14,7 @@ fun mainMenu() {
 
 
     do {
-        println("Select option")
+        println("Main Menu")
         println("[1]: Load the file")
         println("[2]: Generate reports")
         println("[3]: Exit")
