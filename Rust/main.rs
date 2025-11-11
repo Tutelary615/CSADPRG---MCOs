@@ -1,3 +1,8 @@
+/********************
+Last names: ALMERO, AQUINO, DOLOT, MARQUEZ
+Language: Rust
+Paradigm(s): procedural, functional, object-oriented
+********************/
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -358,10 +363,10 @@ fn generate_report_1(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
             r.efficiency_score
         );
     }
-    println!("\nFull table exported to report_1_regional_summary.csv");
+    println!("\nFull table exported to report1_regional_summary.csv");
 
     // Export CSV (sorted)
-    let mut wtr = csv::Writer::from_path("report_1_regional_summary.csv")?;
+    let mut wtr = csv::Writer::from_path("report1_regional_summary.csv")?;
     wtr.write_record(["Region", "MainIsland", "TotalBudget", "MedianSavings", "AvgDelayDays", "HighDelayPct", "EfficiencyScore"])?;
     for r in rows {
         wtr.write_record(&[
@@ -487,10 +492,10 @@ fn generate_report_2(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
         );
     }
     
-    println!("\nFull table exported to report_2_contractor_ranking.csv");
+    println!("\nFull table exported to report2_contractor_ranking.csv");
 
     // Export CSV
-    let mut wtr2 = csv::Writer::from_path("report_2_contractor_ranking.csv")?;
+    let mut wtr2 = csv::Writer::from_path("report2_contractor_ranking.csv")?;
     wtr2.write_record(["Rank", "Contractor", "TotalCost", "NumProjects", "AvgDelay", "TotalSavings", "ReliabilityIndex", "RiskFlag"])?;
 
     for (i, r) in top_rows.iter().enumerate() {
