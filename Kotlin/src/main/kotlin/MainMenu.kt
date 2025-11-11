@@ -1,20 +1,24 @@
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.api.*
-import org.jetbrains.kotlinx.dataframe.io.read
+import org.jetbrains.kotlinx.dataframe.io.readCsv
 import org.jetbrains.kotlinx.dataframe.io.writeCsv
 import java.io.File
 
+/**
+ * contains all functions related to the main menu of the program;
+ * calls functions for the features of the program (loading the data, generating reports)
+ */
 fun mainMenu() {
     var df : DataFrame<*>? = null
     var choice : String = ""
 
 
     do {
-        println("Select language implementation:")
+        println("Select option")
         println("[1]: Load the file")
         println("[2]: Generate reports")
         println("[3]: Exit")
-        choice = getMenuInput(3)
+        choice = getMenuInput("1", "2", "3")
         println()
         when (choice) {
             "1" -> df = loadData()
@@ -25,7 +29,11 @@ fun mainMenu() {
 
 }
 
-fun loadData() : DataFrame<*> {
+/**
+ * contains all the functions required for loading the data
+ * @return a DataFrame containing the data that will be used for analysis
+ */
+private fun loadData() : DataFrame<*> {
     val filename: String = "dpwh_flood_control_projects.csv"
     var filteredDf : DataFrame<*>
     var excludedDf : DataFrame<*>
@@ -36,7 +44,7 @@ fun loadData() : DataFrame<*> {
 
     print("Processing data...")
 
-    unfilteredDf = DataFrame.read(filename)
+    unfilteredDf = DataFrame.readCsv(filename)
     totalRowsLoaded = unfilteredDf.rowsCount()
     unfilteredDf = convertNumbers(unfilteredDf)
 
@@ -49,7 +57,7 @@ fun loadData() : DataFrame<*> {
     rowsFiltered = filteredDf.rowsCount()
 
     // building dataframe of rows excluded
-    excludedDf = unfilteredDf.filter { hasNullExceptMunicipality(it) or !isFrom2021To2023(it) }
+    excludedDf = unfilteredDf.filter { hasNullExceptMunicipality(it) or !isFrom2021To2023(it)}
     excludedDf.writeCsv(File(invalidDataFilename))
 
     println("\t$totalRowsLoaded rows loaded, $rowsFiltered rows filtered for 2021-2023")
@@ -58,7 +66,11 @@ fun loadData() : DataFrame<*> {
     return filteredDf
 }
 
- fun generateReports(df : DataFrame<*>?) {
+/**
+ * generates all reports; displays console outputs
+ * @param df the dataframe containing the source data
+ */
+ private fun generateReports(df : DataFrame<*>?) {
     val report1Df: DataFrame<*>
     val report2Df: DataFrame<*>
     val report3Df: DataFrame<*>
@@ -67,8 +79,9 @@ fun loadData() : DataFrame<*> {
     val report2Filename : String = "report2_contractor_ranking.csv"
     val report3Filename : String = "report3_annual_trends.csv"
     val summaryFilename : String = "summary.json"
+    val divider : String = "=================================================================================================================================="
     val summaryJSONString : String
-    var menuInput : String?
+    var menuInput : String
 
     if (df != null) {
 
@@ -91,7 +104,7 @@ fun loadData() : DataFrame<*> {
         println()
 
         // printing output summaries to console
-
+        println(divider)
         println("Report 1: Regional Flood Mitigation Efficiency Summary")
         println("Filtered: 2021-2023 Projects")
         println()
@@ -100,6 +113,7 @@ fun loadData() : DataFrame<*> {
         println("Full table exported to $report1Filename")
         println()
 
+        println(divider)
         println("Report 2: Top Contractors Performance Ranking")
         println("Top 15 by TotalCost, >= 5 Projects")
         println()
@@ -108,6 +122,7 @@ fun loadData() : DataFrame<*> {
         println("Full table exported to $report2Filename")
         println()
 
+        println(divider)
         println("Report 3: Annual Project Type Cost Overrun Trends")
         println("Grouped by FundingYear and TypeOfWork")
         println()
@@ -116,7 +131,9 @@ fun loadData() : DataFrame<*> {
         println("Full table exported to $report3Filename")
         println()
 
+        println(divider)
         println("Summary stats ($summaryFilename)")
+        println()
         println(summaryJSONString.replace("\n", "").replace("\t", ""))
 
     } else {
@@ -124,10 +141,24 @@ fun loadData() : DataFrame<*> {
     }
     println()
     do {
-        print("Back to Report Selection (Y/N): ")
-        menuInput = readLine()?.trim()
-    } while (menuInput == null || !menuInput.equals("Y", ignoreCase = true))
+        println("Return to main menu (Y/N)")
+        menuInput = getMenuInput("Y", "y", "N", "n")
+    } while (!menuInput.equals("Y", ignoreCase = true))
     println()
+}
+
+/**
+ * gets menu input from the user
+ * @param validChoices valid menu inputs
+ * @return the choice of the user
+ */
+private fun getMenuInput(vararg validChoices : String) : String {
+    var input : String = ""
+    do {
+        print("Enter choice: ")
+        input = readln().trim()
+    } while (!validChoices.contains(input))
+    return input
 }
 
 
