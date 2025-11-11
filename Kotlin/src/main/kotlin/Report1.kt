@@ -5,46 +5,58 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
-
-fun generateReport1(df : DataFrame<*>) : DataFrame<*>{
+/**
+ * contains all functions need for generating Report 1 : Regional Summary
+ * @param df dataframe containing the source data
+ * @return dataframe containing the report
+ * NOTE: numerical values in the returned dataframe are represented as strings
+ */
+fun generateRegionalSummary(df : DataFrame<*>) : DataFrame<*>{
     val dfGroupedByRegion  = df.groupBy( "Region", "MainIsland")
-    var report1Df : DataFrame<*>
+    var regionalSummaryDf : DataFrame<*>
     val maxEfficiencyScore : BigDecimal
     val minEfficiencyScore : BigDecimal
-
-    report1Df = dfGroupedByRegion.aggregate {
+    
+    regionalSummaryDf = dfGroupedByRegion.aggregate {
         sum("ApprovedBudgetForContract") into "TotalBudget"
         median("CostSavings") into "MedianSavings"
         mean("CompletionDelayDays") into "AvgDelay"
     }
 
-    report1Df = report1Df.add("HighDelayPct") { computeHighDelayPct(it, df) }
-    report1Df = report1Df.add("EfficiencyScore") { computeEfficiencyScore(it) }
+    regionalSummaryDf = regionalSummaryDf.add("HighDelayPct") { computeHighDelayPct(it, df) }
+    regionalSummaryDf = regionalSummaryDf.add("EfficiencyScore") { computeEfficiencyScore(it) }
 
-    maxEfficiencyScore = (report1Df.min("EfficiencyScore") as Double).toBigDecimal()
-    minEfficiencyScore = (report1Df.max("EfficiencyScore") as Double).toBigDecimal()
+    minEfficiencyScore = (regionalSummaryDf.min("EfficiencyScore") as Double).toBigDecimal()
+    maxEfficiencyScore = (regionalSummaryDf.max("EfficiencyScore") as Double).toBigDecimal()
 
-
-    fun scaleEfficiencyScore(efficiencyScore : BigDecimal) : BigDecimal {
-
-
-        return ((efficiencyScore - minEfficiencyScore) /
-                (maxEfficiencyScore - minEfficiencyScore)) * BigDecimal(100.0)
+    /**
+     * normalizes efficiency score
+     * @param efficiencyScore 
+     * @return efficiency score normalized (0-100)
+     */
+    fun normalizeEfficiencyScore(efficiencyScore : BigDecimal) : BigDecimal {
+        return  ((efficiencyScore - minEfficiencyScore) /
+                    (maxEfficiencyScore - minEfficiencyScore)) * BigDecimal(100.0)
     }
 
-    report1Df = report1Df.replace { it["EfficiencyScore"] }
-                         .with {efficiencyScore -> efficiencyScore.map{scaleEfficiencyScore((it as Double).toBigDecimal())}}
+    regionalSummaryDf = regionalSummaryDf.replace { it["EfficiencyScore"] }
+                         .with {efficiencyScore -> efficiencyScore.map{normalizeEfficiencyScore((it as Double).toBigDecimal())}}
 
-    report1Df = report1Df.sortByDesc("EfficiencyScore")
+    regionalSummaryDf = regionalSummaryDf.sortByDesc("EfficiencyScore")
 
-    report1Df = formatReport1(report1Df)
-    return report1Df
+    regionalSummaryDf = formatRegionalSummary(regionalSummaryDf)
+    return regionalSummaryDf
 }
 
-private fun computeHighDelayPct(row : DataRow<*>, source : DataFrame<*>) : Double {
+/**
+ * @param row the row of report 1 whose HighDelayPct field is being computed
+ * @param df dataframe containing the source data
+ * @return the high-delay percentage field of row
+ */
+private fun computeHighDelayPct(row : DataRow<*>, df : DataFrame<*>) : Double {
     val mainIsland : String = row["MainIsland"] as String
     val region : String = row["Region"] as String
-    val projectsMainIslandRegionDf : DataFrame<*> = source.filter{ (it["MainIsland"] == mainIsland)
+    val projectsMainIslandRegionDf : DataFrame<*> = df.filter{ (it["MainIsland"] == mainIsland)
                                                                    && it["Region"] == region }
 
     val totalProjects : Int = projectsMainIslandRegionDf.rowsCount()
@@ -58,21 +70,22 @@ private fun computeEfficiencyScore(row : DataRow<*>) : Double {
     val medianSavings = row["MedianSavings"] as Double
     val averageDelay = row["AvgDelay"] as Double
 
-    return (medianSavings / averageDelay) * 100
+    return (medianSavings / averageDelay)
 }
 
-private fun formatReport1(report1Df : DataFrame<*>) : DataFrame<*>{
-    var formattedReport = report1Df
+/**
+ * formats the report 1 dataframe for export
+ * @return the formatted dataframe
+ */
+private fun formatRegionalSummary(regionalSummaryDf : DataFrame<*>) : DataFrame<*>{
+    var formattedReport = regionalSummaryDf
     val twoDecimalFormat = DecimalFormat("#,##0.00")
 
     twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 
-
     formattedReport = formattedReport.replace("TotalBudget", "MedianSavings", "AvgDelay",
                                               "HighDelayPct", "EfficiencyScore")
                                      .with{ cellVal -> cellVal.map {twoDecimalFormat.format(it)} }
-
-
     return formattedReport
 }
 
