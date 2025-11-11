@@ -33,7 +33,7 @@ fun mainMenu() {
  * contains all the functions required for loading the data
  * @return a DataFrame containing the data that will be used for analysis
  */
-private fun loadData() : DataFrame<*> {
+fun loadData() : DataFrame<*> {
     val filename: String = "dpwh_flood_control_projects.csv"
     var filteredDf : DataFrame<*>
     var excludedDf : DataFrame<*>
@@ -74,7 +74,7 @@ private fun loadData() : DataFrame<*> {
     val report1Df: DataFrame<*>
     val report2Df: DataFrame<*>
     val report3Df: DataFrame<*>
-    val summaryMap: Map<String, Number>
+    val summaryMap: Map<String, String>
     val report1Filename : String = "report1_regional_summary.csv"
     val report2Filename : String = "report2_contractor_ranking.csv"
     val report3Filename : String = "report3_annual_trends.csv"
@@ -88,9 +88,9 @@ private fun loadData() : DataFrame<*> {
         println("Generating reports...")
 
         // generating reports
-        report1Df = generateReport1(df)
-        report2Df = generateReport2(df)
-        report3Df = generateReport3(df)
+        report1Df = generateRegionalSummary(df)
+        report2Df = generateContractorRanking(df)
+        report3Df = generateAnnualTrends(df)
         summaryMap = generateSummary(df)
         summaryJSONString = makeSummaryJSONString(summaryMap)
 
@@ -135,6 +135,8 @@ private fun loadData() : DataFrame<*> {
         println("Summary stats ($summaryFilename)")
         println()
         println(summaryJSONString.replace("\n", "").replace("\t", ""))
+        println()
+        println(divider)
 
     } else {
         println("Data has not been loaded")

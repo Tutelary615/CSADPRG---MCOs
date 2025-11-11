@@ -32,11 +32,11 @@ fun generateRegionalSummary(df : DataFrame<*>) : DataFrame<*>{
     /**
      * normalizes efficiency score
      * @param efficiencyScore 
-     * @return efficiency score normalized (0-100)
+     * @return efficiency score normalized 0 to 100
      */
     fun normalizeEfficiencyScore(efficiencyScore : BigDecimal) : BigDecimal {
-        return  ((efficiencyScore - minEfficiencyScore) /
-                    (maxEfficiencyScore - minEfficiencyScore)) * BigDecimal(100.0)
+        return ((efficiencyScore - minEfficiencyScore) /
+                (maxEfficiencyScore - minEfficiencyScore)) * BigDecimal(100.0)
     }
 
     regionalSummaryDf = regionalSummaryDf.replace { it["EfficiencyScore"] }
@@ -49,7 +49,7 @@ fun generateRegionalSummary(df : DataFrame<*>) : DataFrame<*>{
 }
 
 /**
- * @param row the row of report 1 whose HighDelayPct field is being computed
+ * @param row the row of report 1 whose HighDelayPct value is being computed
  * @param df dataframe containing the source data
  * @return the high-delay percentage field of row
  */
@@ -62,10 +62,13 @@ private fun computeHighDelayPct(row : DataRow<*>, df : DataFrame<*>) : Double {
     val totalProjects : Int = projectsMainIslandRegionDf.rowsCount()
     val withDelayOver30 : Int  = (projectsMainIslandRegionDf.count { (it["CompletionDelayDays"] as Int) > 30 })
 
-
     return (withDelayOver30.toDouble() / totalProjects.toDouble()) * 100
 }
 
+/**
+ * @param row the whose efficiencyScore value  will be computed
+ * @return the efficiencyScore value of row (unnormalized)
+ */
 private fun computeEfficiencyScore(row : DataRow<*>) : Double {
     val medianSavings = row["MedianSavings"] as Double
     val averageDelay = row["AvgDelay"] as Double
@@ -75,6 +78,7 @@ private fun computeEfficiencyScore(row : DataRow<*>) : Double {
 
 /**
  * formats the report 1 dataframe for export
+ * @param regionalSummaryDf the unformatted dataframe
  * @return the formatted dataframe
  */
 private fun formatRegionalSummary(regionalSummaryDf : DataFrame<*>) : DataFrame<*>{
@@ -85,7 +89,7 @@ private fun formatRegionalSummary(regionalSummaryDf : DataFrame<*>) : DataFrame<
 
     formattedReport = formattedReport.replace("TotalBudget", "MedianSavings", "AvgDelay",
                                               "HighDelayPct", "EfficiencyScore")
-                                     .with{ cellVal -> cellVal.map {twoDecimalFormat.format(it)} }
+                                     .with{ column -> column.map {twoDecimalFormat.format(it)} }
     return formattedReport
 }
 

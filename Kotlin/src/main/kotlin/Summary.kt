@@ -3,8 +3,13 @@ import org.jetbrains.kotlinx.dataframe.api.*
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
-fun generateSummary (df : DataFrame<*>) : Map<String, Number> {
-
+/**
+ * generates summary
+ * @param df source dataframe
+ * @return a map the summary fields and their corresponding values
+ * NOTE: numerical values in the returned map are represented as strings
+ */
+fun generateSummary (df : DataFrame<*>) : Map<String, String> {
 
     val summary : Map<String, Number>
     val formattedSummary : Map<String, String>
@@ -21,21 +26,24 @@ fun generateSummary (df : DataFrame<*>) : Map<String, Number> {
         "global_avg_delay" to globalAvgDelay,
         "total_savings" to totalSavings
     )
-    return summary
+    formattedSummary = formatSummaryMap(summary)
+    return formattedSummary
 }
 
-
-
-fun makeSummaryJSONString(map : Map<String, Number>) : String {
-    val sb = StringBuilder()
+/**
+ * makes the json string of the summary map for printing
+ * @param summary the summary map
+ * @return the json string
+ */
+fun makeSummaryJSONString(summary : Map<String, String>) : String {
+    val sb : StringBuilder = StringBuilder()
     var ctr : Int = 0
-    val formattedMap : Map<String, String> = formatSummaryMap(map)
 
     sb.append("{\n")
-    for ((key, value) in formattedMap) {
+    for ((key, value) in summary) {
         sb.append("\t\"$key\": $value")
 
-        if (ctr < formattedMap.size - 1) {
+        if (ctr < summary.size - 1) {
             sb.append(",")
         }
         ctr++
@@ -45,9 +53,13 @@ fun makeSummaryJSONString(map : Map<String, Number>) : String {
     return sb.toString()
 }
 
+/**
+ * formats the summary map for conversion to json string
+ * @param summary the summary map
+ * @return the formatted summary map
+ */
 private fun formatSummaryMap(summary : Map<String, Number>) : Map<String, String> {
     val formattedMap: Map<String, String>
-
 
     val twoDecimalFormat = DecimalFormat("###.00")
     twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
