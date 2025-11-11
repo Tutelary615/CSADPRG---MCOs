@@ -9,10 +9,8 @@ import java.text.DecimalFormat
 fun generateReport1(df : DataFrame<*>) : DataFrame<*>{
     val dfGroupedByRegion  = df.groupBy( "Region", "MainIsland")
     var report1Df : DataFrame<*>
-    var mainIsland : String
-    var region : String
-    val maxEfficiencyScore : Double
-    val minEfficiencyScore : Double
+    val maxEfficiencyScore : BigDecimal
+    val minEfficiencyScore : BigDecimal
 
     report1Df = dfGroupedByRegion.aggregate {
         sum("ApprovedBudgetForContract") into "TotalBudget"
@@ -20,36 +18,38 @@ fun generateReport1(df : DataFrame<*>) : DataFrame<*>{
         mean("CompletionDelayDays") into "AvgDelay"
     }
 
-    report1Df = report1Df.add("HighDelayPct") {
-                              mainIsland = it["MainIsland"] as String
-                              region = it["Region"] as String
-                              computeHighDelayPct(df, mainIsland, region)
-                           }
-                         .add("EfficiencyScore") {
-                             computeEfficiencyScore(it)
-                         }
-    maxEfficiencyScore = report1Df.min("EfficiencyScore") as Double
-    minEfficiencyScore = report1Df.max("EfficiencyScore") as Double
+    report1Df = report1Df.add("HighDelayPct") { computeHighDelayPct(it, df) }
+    report1Df = report1Df.add("EfficiencyScore") { computeEfficiencyScore(it) }
+
+    maxEfficiencyScore = (report1Df.min("EfficiencyScore") as Double).toBigDecimal()
+    minEfficiencyScore = (report1Df.max("EfficiencyScore") as Double).toBigDecimal()
 
 
-    fun scaleEfficiencyScore(efficiencyScore : Double) : BigDecimal {
-        return ((efficiencyScore.toBigDecimal() - minEfficiencyScore.toBigDecimal()) /
-                (maxEfficiencyScore.toBigDecimal() - minEfficiencyScore.toBigDecimal())) * BigDecimal(100)
+    fun scaleEfficiencyScore(efficiencyScore : BigDecimal) : BigDecimal {
+
+
+        return ((efficiencyScore - minEfficiencyScore) /
+                (maxEfficiencyScore - minEfficiencyScore)) * BigDecimal(100.0)
     }
 
     report1Df = report1Df.replace { it["EfficiencyScore"] }
-                         .with {efficiencyScore -> efficiencyScore.map{scaleEfficiencyScore(it as Double)}}
+                         .with {efficiencyScore -> efficiencyScore.map{scaleEfficiencyScore((it as Double).toBigDecimal())}}
+
     report1Df = report1Df.sortByDesc("EfficiencyScore")
+
     report1Df = formatReport1(report1Df)
     return report1Df
 }
 
-private fun computeHighDelayPct(df : DataFrame<*>, mainIsland : String, region: String) : Double {
-    val filteredIslandRegionDf = df.filter({it["MainIsland"].toString() == mainIsland &&
-                                            it["Region"].toString() == region })
+private fun computeHighDelayPct(row : DataRow<*>, source : DataFrame<*>) : Double {
+    val mainIsland : String = row["MainIsland"] as String
+    val region : String = row["Region"] as String
+    val projectsMainIslandRegionDf : DataFrame<*> = source.filter{ (it["MainIsland"] == mainIsland)
+                                                                   && it["Region"] == region }
 
-    val totalProjects = filteredIslandRegionDf.rowsCount()
-    val withDelayOver30  = filteredIslandRegionDf.count { (it["CompletionDelayDays"] as Int) > 30 }
+    val totalProjects : Int = projectsMainIslandRegionDf.rowsCount()
+    val withDelayOver30 : Int  = (projectsMainIslandRegionDf.count { (it["CompletionDelayDays"] as Int) > 30 })
+
 
     return (withDelayOver30.toDouble() / totalProjects.toDouble()) * 100
 }
@@ -67,14 +67,11 @@ private fun formatReport1(report1Df : DataFrame<*>) : DataFrame<*>{
 
     twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 
-    formattedReport = formattedReport.replace("TotalBudget", "MedianSavings")
-        .with{ cellVal -> cellVal.map {twoDecimalFormat.format(it)} }
 
-    formattedReport = formattedReport.replace("AvgDelay", "EfficiencyScore")
-        .with{ cellVal -> cellVal.map {twoDecimalFormat.format(it)} }
+    formattedReport = formattedReport.replace("TotalBudget", "MedianSavings", "AvgDelay",
+                                              "HighDelayPct", "EfficiencyScore")
+                                     .with{ cellVal -> cellVal.map {twoDecimalFormat.format(it)} }
 
-    formattedReport = formattedReport.replace("HighDelayPct")
-        .with{ cellVal -> cellVal.map {twoDecimalFormat.format(it)} }
 
     return formattedReport
 }

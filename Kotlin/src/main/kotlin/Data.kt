@@ -29,13 +29,10 @@ fun convertNumbers(df : DataFrame<*>) : DataFrame<*> {
 fun addDerivedFields(df : DataFrame<*>) : DataFrame<*> {
     var dfWithDerivedFields : DataFrame<*> = df
 
-    dfWithDerivedFields = dfWithDerivedFields
-                          .add("CompletionDelayDays") {
-                            computeCompletionDelayDays(it)
-                        }
-                          .add("CostSavings") {
-                              computeCostSavings(it)
-                         }
+    dfWithDerivedFields = dfWithDerivedFields.add("CompletionDelayDays") { computeCompletionDelayDays(it) }
+
+    dfWithDerivedFields = dfWithDerivedFields.add("CostSavings") { computeCostSavings(it) }
+
     return dfWithDerivedFields
 }
 

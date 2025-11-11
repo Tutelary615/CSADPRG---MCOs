@@ -39,16 +39,15 @@ private fun computeReliabilityIndex(row : DataRow<*>): Double {
 private fun formatReport2(report2Df : DataFrame<*>) : DataFrame<*> {
     var formattedDf : DataFrame<*> = report2Df
     val twoDecimalFormat = DecimalFormat("#,##0.00")
+    val intWithCommaFormat = DecimalFormat("#,###")
 
     twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 
+    formattedDf = formattedDf.replace("NumProjects")
+        .with {cellVal -> cellVal.map{intWithCommaFormat.format(it)} }
 
-
-    formattedDf = formattedDf.replace("TotalCost", "TotalSavings")
+    formattedDf = formattedDf.replace("TotalCost", "TotalSavings", "AvgDelay", "ReliabilityIndex")
                              .with { cellVal -> cellVal.map{ twoDecimalFormat.format(it)} }
-
-    formattedDf = formattedDf.replace("AvgDelay", "ReliabilityIndex")
-                             .with {cellVal -> cellVal.map{ twoDecimalFormat.format(it)} }
 
     return formattedDf
 }

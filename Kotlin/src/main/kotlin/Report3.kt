@@ -17,7 +17,7 @@ fun generateReport3(df : DataFrame<*>) : DataFrame<*> {
         computeOverrunRate(it as DataFrame<*>) into "OverrunRate"
     }
 
-    report3Df = report3Df.add("YoYChange") {computeYoYChange(it, report3Df)}
+    report3Df = report3Df.add("YoYChange") {computeYoYChange(it)}
     report3Df = report3Df.sortBy {it["FundingYear"] and it["AvgSavings"].desc()}
 
     report3Df = formatReport3(report3Df)
@@ -28,29 +28,29 @@ private fun computeOverrunRate(grouping : DataFrame<*>) : Double {
     val totalProjects : Int = grouping.count()
     val overrunProjects : Int = grouping.count { (it["CostSavings"] as Double) < 0}
     val overrunRate : Double = (overrunProjects.toDouble() / totalProjects.toDouble()) * 100
+
     return overrunRate
 }
 
-private fun computeYoYChange(row : DataRow<*>, df : DataFrame<*>) : Double {
-    val yOYChange: Double
+private fun computeYoYChange(row : DataRow<*>) : Double {
     val fundingYear : Int = row["FundingYear"] as Int
     val typeOfWork : String = row["TypeOfWork"] as String
-    val tempDf : DataFrame<*>
+    val curYearSavings : Double = row["AvgSavings"] as Double
+    val prevYearSavings : Double
     val prevYearRow : DataRow<*>
 
     if (fundingYear == 2021) {
         return 0.0
     }
-    tempDf = (df.filter { (it["FundingYear"] == fundingYear - 1 ) && it["TypeOfWork"] == typeOfWork})
-
-    if (tempDf.rowsCount() == 0) {
-        return 0.0
+    try {
+        prevYearRow = (row.df().filter { (it["FundingYear"] == fundingYear - 1 ) && it["TypeOfWork"] == typeOfWork})[0]
+    } catch (e: Exception) {
+        return curYearSavings
     }
-    prevYearRow = tempDf[0]
-    yOYChange =  (((row["AvgSavings"] as Double) - (prevYearRow["AvgSavings"] as Double)) /
-                 abs(prevYearRow["AvgSavings"] as Double)) * 100
+    prevYearSavings = prevYearRow["AvgSavings"] as Double
 
-    return yOYChange
+    return ((curYearSavings - prevYearSavings) / prevYearSavings) * 100
+
 }
 private fun formatReport3(df : DataFrame<*>) : DataFrame<*> {
     var formattedDf: DataFrame<*> = df
@@ -63,13 +63,7 @@ private fun formatReport3(df : DataFrame<*>) : DataFrame<*> {
     formattedDf = formattedDf.replace("TotalProjects")
                              .with { cellVal -> cellVal.map { intWithCommaFormat.format(it) } }
 
-    formattedDf = formattedDf.replace("AvgSavings")
-                             .with { cellVal -> cellVal.map { twoDecimalFormat.format(it) } }
-
-    formattedDf = formattedDf.replace("OverrunRate")
-                             .with { cellVal -> cellVal.map { twoDecimalFormat.format(it) } }
-
-    formattedDf = formattedDf.replace("YoYChange")
+    formattedDf = formattedDf.replace("AvgSavings", "OverrunRate", "YoYChange")
                              .with { cellVal -> cellVal.map { twoDecimalFormat.format(it) } }
 
     return formattedDf

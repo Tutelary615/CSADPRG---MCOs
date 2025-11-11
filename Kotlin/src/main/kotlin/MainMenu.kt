@@ -58,7 +58,7 @@ fun loadData() : DataFrame<*> {
     return filteredDf
 }
 
-private fun generateReports(df : DataFrame<*>?) {
+ fun generateReports(df : DataFrame<*>?) {
     val report1Df: DataFrame<*>
     val report2Df: DataFrame<*>
     val report3Df: DataFrame<*>
@@ -110,6 +110,7 @@ private fun generateReports(df : DataFrame<*>?) {
 
         println("Report 3: Annual Project Type Cost Overrun Trends")
         println("Grouped by FundingYear and TypeOfWork")
+        println()
 
         println(report3Df.head(2))
         println("Full table exported to $report3Filename")
