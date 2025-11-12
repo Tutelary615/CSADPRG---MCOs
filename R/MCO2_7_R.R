@@ -190,7 +190,7 @@ generate_reports <- function(data) {
       TotalProjects = label_comma(accuracy = 1)(IntTotalProjects),
       AvgSavings = label_comma(accuracy = 0.01)(DblAvgSavings),
       OverrunRate = label_comma(accuracy = 0.01)(DblOverrunRate * 100),
-      DblYoYChange = ifelse(!is.na(lag(FundingYear)) & TypeOfWork == lag(TypeOfWork) & lag(FundingYear) == FundingYear - 1, (DblAvgSavings - lag(DblAvgSavings)) / abs(lag(DblAvgSavings)), 0.00),
+      DblYoYChange = ifelse(!is.na(lag(FundingYear)) & TypeOfWork == lag(TypeOfWork) & lag(FundingYear) == FundingYear - 1, (DblAvgSavings - lag(DblAvgSavings)) / lag(DblAvgSavings), 0.00),
       YoYChange = label_comma(accuracy = 0.01)(DblYoYChange * 100)
     ) %>%
     arrange(FundingYear, desc(DblAvgSavings)) %>%
@@ -226,11 +226,13 @@ generate_reports <- function(data) {
   summary_stats$global_avg_delay <- round(avgs_sums$GlobalAvgDelay, 2)
   summary_stats$total_savings <- round(avgs_sums$TotalSavings, 2)
   
+  json_output <- toJSON(summary_stats, auto_unbox = TRUE, pretty = 4)
+  
   cat("Summary Stats (summary.json):\n")
-  cat(toJSON(summary_stats, auto_unbox = TRUE, pretty = TRUE))
+  cat(json_output)
   cat("\n\n")
   
-  write_json(summary_stats, "summary.json", pretty = TRUE, auto_unbox = TRUE)
+  writeLines(json_output, "summary.json")
 }
 
 ##################
