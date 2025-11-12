@@ -56,7 +56,7 @@ private fun formatContractorRanking(contractorRankingDf : DataFrame<*>) : DataFr
     twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 
     formattedDf = formattedDf.replace("NumProjects")
-                             .with {cellVal -> cellVal.map{intWithCommaFormat.format(it)} }
+                             .with {column -> column.map{intWithCommaFormat.format(it)} }
 
     formattedDf = formattedDf.replace("TotalCost", "TotalSavings", "AvgDelay", "ReliabilityIndex")
                              .with { column -> column.map{ twoDecimalFormat.format(it)} }
