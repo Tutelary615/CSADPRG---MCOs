@@ -84,10 +84,10 @@ private fun formatAnnualTrends(annualTrendsDf : DataFrame<*>) : DataFrame<*> {
     twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 
     formattedDf = formattedDf.replace("TotalProjects")
-                             .with { cellVal -> cellVal.map { intWithCommaFormat.format(it) } }
+                             .with { column -> column.map { intWithCommaFormat.format(it) } }
 
     formattedDf = formattedDf.replace("AvgSavings", "OverrunRate", "YoYChange")
-                             .with { cellVal -> cellVal.map { twoDecimalFormat.format(it) } }
+                             .with { column -> column.map { twoDecimalFormat.format(it) } }
 
     return formattedDf
 }
