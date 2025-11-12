@@ -173,7 +173,7 @@ async function loadFile() {
     process.stdout.write(`${formatWholeNumber(data.length)} filtered for 2021-2023), ${formatWholeNumber(invalid.length)} invalid rows filtered out.`);
 
     // Exporting error rows to a separate CSV file
-    console.log("\n\nExporting invalid rows...");
+    console.log("\n\nExporting invalid data...");
     await writeCsvFile(invalid, 'invalid_data.csv');
     return data;
 }
