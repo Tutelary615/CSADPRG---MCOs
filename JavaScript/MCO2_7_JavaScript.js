@@ -29,8 +29,7 @@ const rl = readline.createInterface({
 });
 
 /**
- * @function getInput
- * @description promise-based function that gets user input
+ * Promise-based function that gets user input
  * @param query prompt to be displayed to the user
  * @returns Promise of the output
  */
@@ -41,8 +40,7 @@ function getInput(query) {
 }
 
 /**
- * @function roundValue
- * @description rounds a value to 2 decimals and returns it as a Number
+ * Rounds a value to 2 decimals and returns it as a Number
  * @param value value to be rounded
  * @returns value rounded to 2 decimals
 */
@@ -51,8 +49,7 @@ function roundValue(value, decimals = 2) {
 }
 
 /**
- * @function roundValueToString
- * @description rounds a value to 2 decimals and returns it as a String
+ * Rounds a value to 2 decimals and returns it as a String
  * @param value value to be rounded
  * @returns string of value rounded to 2 decimals 
 */
@@ -60,15 +57,32 @@ function roundValueToString(value, decimals = 2) {
     return value.toFixed(decimals);
 }
 
+/**
+ * Formats a whole number with commas
+ * @param num number to be formatted
+ * @returns string of formatted whole number
+ */
 function formatWholeNumber(num) {
     return num.toLocaleString('en-US');
 }
 
+/**
+ * Formats a decimal number with commas (if necessary) and specified decimal places
+ * @param num number to be formatted
+ * @param decimals number of decimal places (default: 2)
+ * @returns string of formatted decimal number
+ */
 function formatDecimalNumber(num, decimals = 2) {
     num = roundValue(num, decimals);
     return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+/**
+ * Gets the average of an array
+ * @param arr array of numbers 
+ * @param len length of the array (default: arr.length) 
+ * @returns average of the array
+ */
 function getAverage(arr, len = 0) {
     if (len === 0) {
         len = arr.length;
@@ -76,6 +90,10 @@ function getAverage(arr, len = 0) {
     return arr.reduce((sum, curr) => sum + curr, 0) / len;
 }
 
+/**
+ * Formats all number values in an object to strings with commas
+ * @param data object to be formatted 
+ */
 function formatData(data) {
     for (const row of data) {
         for (const key in row) {
@@ -86,6 +104,10 @@ function formatData(data) {
     }
 }
 
+/**
+ * Parses and reads a CSV file
+ * @returns Promise of array of objects representing the rows of the CSV file
+ */
 async function readFile() {
     return new Promise((resolve, reject) => {
         const results = [];
@@ -98,6 +120,12 @@ async function readFile() {
     });
 }
 
+/**
+ * Writes report data to a CSV file and exports it
+ * @param data array of objects representing the rows to be written 
+ * @param file output file name 
+ * @returns Promise of completion of writing to the given CSV file
+ */
 async function writeCsvFile(data, file) {
     return new Promise((resolve, reject) => {
         const writeStream = fs.createWriteStream(file)
@@ -116,11 +144,20 @@ async function writeCsvFile(data, file) {
     })
 }
 
+/**
+ * Writes report data to a JSON file and exports it
+ * @param data objects to be written to the file 
+ * @param file output file name 
+ */
 async function writeJsonFile(data, file) {
     await fs.promises.writeFile(file, JSON.stringify(data, null, 4), 'utf8');
     console.log(`Exported to JSON file: ${file}\n`);
 }
 
+/**
+ * Loads and processes a CSV file through filtering out invalid rows and executing type conversions
+ * @returns processed data as an array of objects
+ */
 async function loadFile() {
     process.stdout.write("Processing dataset...")
 
@@ -178,11 +215,18 @@ async function loadFile() {
     return data;
 }
 
+/**
+ * Generates Report 1: Regional Flood Mitigation Efficiency Summary (2021-2023)
+ * @param data data to be processed 
+ * @returns report data as an array of objects
+ */
 function generateReport1(data) {
+    // Gets distinct regions (region and main island as one string)
     const regions = [...new Set(data.map(row => row.Region + "," + row.MainIsland))];
 
+    // Creates initial report structure (one object per region)
     const reports = regions.map((curr) => { 
-        const temp = curr.split(",");
+        const temp = curr.split(","); // Splits region and main island
         curr = {
             Region: temp[0],
             MainIsland: temp[1],
@@ -194,6 +238,7 @@ function generateReport1(data) {
         return curr
     });
 
+    // Populates report data per region
     for (const row of data) {
         const obj = reports.find(x => x.Region === row.Region);
 
@@ -205,9 +250,12 @@ function generateReport1(data) {
         }
     }
 
+    // Array of efficiency scores for normalization
     const efficiencies = [];
 
+    // Final computations per region
     for (const row of reports) {
+        // Median savings calculation
         const len = row.MedianSavings.length;
         const mid = Math.floor(len / 2);
 
@@ -219,29 +267,41 @@ function generateReport1(data) {
             row.MedianSavings = row.MedianSavings[mid];
         }
 
+        // Average delay and high delay percentage calculation
         row.AvgDelay = getAverage(row.AvgDelay);
         row.HighDelayPct = row.HighDelayPct / len * 100;
+
+        // Efficiency score tallying
         row.EfficiencyScore = row.MedianSavings / row.AvgDelay * 100;
         efficiencies.push(row.EfficiencyScore);
     }
 
+    // Normalization of efficiency scores
     const maxEff = Math.max(...efficiencies);
     const minEff = Math.min(...efficiencies);
 
+    // Gets normalized efficiency scores per region
     for (const row of reports) {
         row.EfficiencyScore = ((row.EfficiencyScore - minEff) / (maxEff - minEff)) * 100;
     }
 
+    // Sorts by efficiency score descending
     reports.sort((a, b) => b.EfficiencyScore - a.EfficiencyScore);
 
     formatData(reports);
-
     return reports;
 }
 
+/**
+ * Generates Report 2: Top Contractors Performance Ranking (Top 15 by Total Cost, min. 5 Projects)
+ * @param data data to be processed 
+ * @returns report data as an array of objects
+ */
 function generateReport2(data) {
+    // Gets distinct contractors
     const contractors = [...new Set(data.map(row => row.Contractor))];
 
+    // Creates initial report structure (one object per contractor)
     const reports = contractors.map((curr) => {
         curr = {
             Contractor: curr,
@@ -253,6 +313,7 @@ function generateReport2(data) {
         return curr;
     });
 
+    // Populates report data per contractor
     for (const row of data) {
         const obj = reports.find(x => x.Contractor === row.Contractor);
 
@@ -262,28 +323,37 @@ function generateReport2(data) {
         obj.TotalSavings += row.CostSavings;
     }
 
+    // Filters contractors with at least 5 projects
     const filterReports = reports.filter(curr => curr.NumProjects >= 5);
 
+    // Final computations per contractor
     for (const row of filterReports) {
+        // Formats number of projects
         row.NumProjects = formatWholeNumber(row.NumProjects);
+        
+        // Average delay calculation
         row.AvgDelay = getAverage(row.AvgDelay);
 
+        // Reliability index calculation
         row.ReliabilityIndex = (1 - (row.AvgDelay / 90)) * (row.TotalSavings / row.TotalCost) * 100;
         if (row.ReliabilityIndex > 100) {
             row.ReliabilityIndex = 100;
         }
 
+        // Risk flag assignment
         if (row.ReliabilityIndex < 50) {
-            row.RiskFlag = "HIGH RISK";
+            row.RiskFlag = "High Risk";
         } else {
-            row.RiskFlag = "LOW RISK";
+            row.RiskFlag = "Low Risk";
         }
     }
 
+    // Sorts by total cost descending
     filterReports.sort((a, b) => b.TotalCost - a.TotalCost);
 
     formatData(reports);
     
+    // Gets top 15 contractors and appends rank for the final report
     const finalReport = filterReports
         .slice(0, 15)
         .map((curr, index) => {
@@ -294,11 +364,18 @@ function generateReport2(data) {
     return finalReport;
 }
 
+/**
+ * Generates Report 3: Annual Project Type Cost Overrun Trends (by Funding Year and Type of Work)
+ * @param data data to be processed 
+ * @returns report data as an array of objects
+ */
 function generateReport3(data) {
+    // Gets distinct categories (funding year and type of work as one string)
     const categories = [...new Set(data.map(row => row.FundingYear + "," + row.TypeOfWork))];
 
+    // Creates initial report structure (one object per year and type of work)
     const reports = categories.map((curr) => { 
-        const temp = curr.split(",");
+        const temp = curr.split(","); // Splits funding year and type of work
         curr = {
             FundingYear: temp[0],
             TypeOfWork: temp[1],
@@ -309,6 +386,7 @@ function generateReport3(data) {
         return curr
     });
 
+    // Populates report data per funding year and type of work
     for (const row of data) {
         const obj = reports.find(x => x.FundingYear === String(row.FundingYear) && x.TypeOfWork === row.TypeOfWork);
 
@@ -319,19 +397,27 @@ function generateReport3(data) {
         }
     }
 
+    // Final computations per funding year and type of work
     for (const row of reports) {
         const len = row.AvgSavings.length;
 
+        // Average savings and overrun rate calculation
         row.AvgSavings = getAverage(row.AvgSavings);
         row.OverrunRate = row.OverrunRate / len * 100;
     }
 
+    // Sorts by funding year ascending, then by average savings descending
     reports.sort((a, b) => a.FundingYear - b.FundingYear || b.AvgSavings - a.AvgSavings);
 
+    // Year-over-year change calculation
     for (const row of reports) {
+        // Formats number of total projects
         row.TotalProjects = formatWholeNumber(row.TotalProjects);
+        
+        // Finds previous year data for the same type of work
         const pYear = reports.find(x => x.FundingYear === String(row.FundingYear - 1) && x.TypeOfWork === row.TypeOfWork);
 
+        // Year-over-year change calculation based on availability of previous year data
         if (pYear) {
             row.YoYChange = (row.AvgSavings - pYear.AvgSavings) / pYear.AvgSavings * 100;
         } else {
@@ -343,22 +429,34 @@ function generateReport3(data) {
     return reports;
 }
 
+/**
+ * Generates summary statistics of the dataset
+ * @param data data to be processed 
+ * @returns summary data as an object
+ */
 function generateSummaryJSON(data) {
     const summary = {};
 
+    // Calculating summary statistics
     summary.total_projects = [...new Set(data.map(row => row.ProjectId))].length;
     summary.total_contractors = [...new Set(data.map(row => row.Contractor))].length;
     summary.total_provinces = [...new Set(data.map(row => row.Province))].length;
     summary.global_avg_delay = getAverage(data.map(curr => curr.CompletionDelayDays), summary.total_projects);
     summary.total_savings = data.reduce((total, curr) => total + curr.CostSavings, 0);
 
+    // Formatting decimal values
     summary.global_avg_delay = roundValueToString(summary.global_avg_delay);
     summary.total_savings = roundValueToString(summary.total_savings);
 
     return summary;
 }
 
+/**
+ * Retrieved data for each report and generates the reports as exported files
+ * @param data data to be processed for the reports 
+ */
 async function generateReports(data) {
+    // Function, Report Title, Output File Name
     const reports = [
         [generateReport1, "Report 1: Regional Flood Mitigation Efficiency Summary (2021-2023)", "report1_regional_summary.csv"], 
         [generateReport2, "Report 2: Top Contractors Performance Ranking (Top 15 by Total Cost, min. 5 Projects)", "report2_contractor_ranking.csv"], 
@@ -370,9 +468,11 @@ async function generateReports(data) {
     console.log("Outputs saved to individual files...\n");
 
     for (const report of reports) {
+        // Retrieves data of the report
         console.log(report[1]);
         let reportData = report[0](structuredClone(data));
 
+        // Exports data to the specified file type
         switch (report[2].split('.')[1]) {
             case 'csv': 
                 console.table(reportData.slice(0, 2));
@@ -388,6 +488,9 @@ async function generateReports(data) {
     }
 }
 
+/**
+ * Prints the main menu options
+ */
 function displayMainMenu() {
     console.log("\nSelect Language Implementation");
     console.log("[1] Load the file");
@@ -395,6 +498,9 @@ function displayMainMenu() {
     console.log("[3] Exit\n");
 }
 
+/**
+ * Executes the main menu
+ */
 async function mainMenu() {
     let option;
     let data;
@@ -424,6 +530,7 @@ async function mainMenu() {
     } 
 }
 
+// Start the main menu
 mainMenu();
 
 // Handles the termination of the program via Ctrl + C or main menu
