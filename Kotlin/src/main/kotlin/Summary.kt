@@ -41,7 +41,7 @@ fun makeSummaryJSONString(summary : Map<String, String>) : String {
 
     sb.append("{\n")
     for ((key, value) in summary) {
-        sb.append("\t\"$key\": $value")
+        sb.append("    \"$key\": $value")
 
         if (ctr < summary.size - 1) {
             sb.append(",")
