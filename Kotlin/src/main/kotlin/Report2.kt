@@ -25,7 +25,7 @@ fun generateContractorRanking(df : DataFrame<*>) : DataFrame<*> {
     contractorRankingDf = contractorRankingDf.sortByDesc {it["TotalCost"].convertToDouble()}
     contractorRankingDf = contractorRankingDf.head(15)
     contractorRankingDf = contractorRankingDf.insert("Rank") {it.index() + 1}.at(0)
-    contractorRankingDf = contractorRankingDf.add("RiskFlag") { if ((it["ReliabilityIndex"] as Double) < 5) "HIGH RISK" else "LOW RISK"}
+    contractorRankingDf = contractorRankingDf.add("RiskFlag") { if ((it["ReliabilityIndex"] as Double) < 5) "High Risk" else "Low Risk"}
     contractorRankingDf = formatContractorRanking(contractorRankingDf)
     return contractorRankingDf
 }
