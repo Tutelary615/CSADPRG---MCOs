@@ -461,9 +461,9 @@ fn generate_report_2(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
 
 
         let risk_flag = if reliability_index < 50.0 {
-            "HIGH RISK".to_string()
+            "High Risk".to_string()
         } else {
-            "LOW RISK".to_string()
+            "Low Risk".to_string()
         };
 
         // place calculated data into results 
