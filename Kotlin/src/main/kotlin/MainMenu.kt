@@ -134,7 +134,7 @@ fun loadData() : DataFrame<*> {
         println(divider)
         println("Summary stats ($summaryFilename)")
         println()
-        println(summaryJSONString.replace("\n", "").replace("\t", ""))
+        println(summaryJSONString.replace("\n", "").replace("    ", ""))
         println()
         println(divider)
 

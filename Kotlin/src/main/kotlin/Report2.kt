@@ -25,7 +25,7 @@ fun generateContractorRanking(df : DataFrame<*>) : DataFrame<*> {
     contractorRankingDf = contractorRankingDf.sortByDesc {it["TotalCost"].convertToDouble()}
     contractorRankingDf = contractorRankingDf.head(15)
     contractorRankingDf = contractorRankingDf.insert("Rank") {it.index() + 1}.at(0)
-    contractorRankingDf = contractorRankingDf.add("RiskFlag") { if ((it["ReliabilityIndex"] as Double) < 5) "HIGH RISK" else "LOW RISK"}
+    contractorRankingDf = contractorRankingDf.add("RiskFlag") { if ((it["ReliabilityIndex"] as Double) < 5) "High Risk" else "Low Risk"}
     contractorRankingDf = formatContractorRanking(contractorRankingDf)
     return contractorRankingDf
 }
@@ -56,7 +56,7 @@ private fun formatContractorRanking(contractorRankingDf : DataFrame<*>) : DataFr
     twoDecimalFormat.roundingMode = RoundingMode.HALF_UP
 
     formattedDf = formattedDf.replace("NumProjects")
-                             .with {cellVal -> cellVal.map{intWithCommaFormat.format(it)} }
+                             .with {column -> column.map{intWithCommaFormat.format(it)} }
 
     formattedDf = formattedDf.replace("TotalCost", "TotalSavings", "AvgDelay", "ReliabilityIndex")
                              .with { column -> column.map{ twoDecimalFormat.format(it)} }
