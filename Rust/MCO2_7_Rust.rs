@@ -68,6 +68,11 @@ fn load_and_process_file() -> Result<(), Box<dyn Error>> {
     let mut rdr = csv::Reader::from_path(filename)?;
     // get headers of csv
     let headers = rdr.headers()?.clone();
+
+    // initialize for invalid data
+    let mut invalid_wtr = csv::Writer::from_path("invalid_data.csv")?;
+    invalid_wtr.write_record(headers.iter())?;
+
     let mut total_rows = 0;
     let mut filtered_rows = 0;
     let mut error_count = 0;
@@ -91,18 +96,26 @@ fn load_and_process_file() -> Result<(), Box<dyn Error>> {
         // check for errors
         let record = match result {
             Ok(r) => r,
-            Err(e) => {
+            Err(ref e) => {
                 eprintln!("Row {}: CSV parse error: {}", total_rows, e);
                 error_count += 1;
+            
                 continue;
+        }
+        };
+
+        let mut write_invalid = || {
+            if let Err(e) = invalid_wtr.write_record(record.iter()) {
+                eprintln!("Failed to write invalid record: {}", e);
             }
+            error_count += 1;
         };
 
         // FundingYear validation and filter
         let fy = funding_year_idx.and_then(|i| record.get(i));
         let fy_num = match fy.and_then(|f| f.parse::<i32>().ok()) {
             Some(y) if y >= 2021 && y <= 2023 => y, //check if record is inside of year specification
-            Some(_) => continue,
+            Some(_) => { write_invalid(); continue; },
             None => {
                 eprintln!("Row {}: Invalid FundingYear: {:?}", total_rows, fy);
                 error_count += 1;
@@ -113,47 +126,47 @@ fn load_and_process_file() -> Result<(), Box<dyn Error>> {
         // general checks if column exists and non empty
         let region = match region_idx.and_then(|i| record.get(i)) {
             Some(v) if !v.is_empty() => v.to_string(),
-            _ => { error_count += 1; continue; }
+            _ => { write_invalid(); continue; } 
         };
         let main_island = match main_island_idx.and_then(|i| record.get(i)) {
             Some(v) if !v.is_empty() => v.to_string(),
-            _ => { error_count += 1; continue; }
+            _ => { write_invalid(); continue; } 
         };
 
         let province = match province_idx.and_then(|i| record.get(i)) {
             Some(v) if !v.is_empty() => v.to_string(),
-            _ => { error_count += 1; continue; }
+            _ => { write_invalid(); continue; } 
         };
 
         let contractor = match contractor_idx.and_then(|i| record.get(i)) {
             Some(v) if !v.is_empty() => v.to_string(),
-            _ => { error_count += 1; continue; }
+            _ => { write_invalid(); continue; } 
         };
 
         let type_of_work = match type_of_work_idx.and_then(|i| record.get(i)) {
             Some(v) if !v.is_empty() => v.to_string(),
-            _ => { error_count += 1; continue; }
+            _ => { write_invalid(); continue; } 
         };
 
         // check if numbers can be parsed as floats
         let approved_budget = match approved_budget_idx.and_then(|i| record.get(i)).and_then(|v| v.parse::<f64>().ok()) {
             Some(v) => v,
-            None => { error_count += 1; continue; }
+            _ => { write_invalid(); continue; }
         };
         let contract_cost = match contract_cost_idx.and_then(|i| record.get(i)).and_then(|v| v.parse::<f64>().ok()) {
             Some(v) => v,
-            None => { error_count += 1; continue; }
+            _ => { write_invalid(); continue; } 
         };
 
         // parse data according to year month day
         let start_date = match start_date_idx.and_then(|i| record.get(i)).and_then(|v| NaiveDate::parse_from_str(v, "%Y-%m-%d").ok()) {
             Some(d) => d,
-            None => { error_count += 1; continue; }
+            _ => { write_invalid(); continue; }
         };
 
         let actual_completion_date = match actual_completion_idx.and_then(|i| record.get(i)).and_then(|v| NaiveDate::parse_from_str(v, "%Y-%m-%d").ok()) {
             Some(d) => d,
-            None => { error_count += 1; continue; }
+            _ => { write_invalid(); continue; } 
         };
 
         filtered_rows += 1;
@@ -171,6 +184,8 @@ fn load_and_process_file() -> Result<(), Box<dyn Error>> {
             actual_completion_date,
             funding_year: fy_num,
         });
+
+        invalid_wtr.flush()?;
     }
     println!("Processing dataset... ({} rows loaded, {} filtered for 2021-2023)", total_rows, filtered_rows);
     if error_count > 0 {
@@ -372,8 +387,8 @@ fn generate_report_1(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
         wtr.write_record(&[
             r.region,
             r.main_island,
-            format!("{:.2}", r.total_budget),
-            format!("{:.2}", r.median_savings),
+            format_comma_float(r.total_budget),
+            format_comma_float(r.median_savings),
             format!("{:.2}", r.avg_delay),
             format!("{:.1}", r.delay_over30_pct),
             format!("{:.2}", r.efficiency_score),
@@ -446,9 +461,9 @@ fn generate_report_2(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
 
 
         let risk_flag = if reliability_index < 50.0 {
-            "High Risk".to_string()
+            "HIGH RISK".to_string()
         } else {
-            "Low Risk".to_string()
+            "LOW RISK".to_string()
         };
 
         // place calculated data into results 
@@ -502,11 +517,11 @@ fn generate_report_2(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
         wtr2.write_record(&[
             (i + 1).to_string(),
             r.contractor.clone(),
-            format!("{:.2}", r.total_cost),
+            format_comma_float(r.total_cost),
             r.num_projects.to_string(),
-            format!("{:.2}", r.avg_delay),
-            format!("{:.2}", r.total_savings),
-            format!("{:.2}", r.reliability_index),
+            format_comma_float(r.avg_delay),
+            format_comma_float(r.total_savings),
+            format_comma_float(r.reliability_index),
             r.risk_flag.clone(),
         ])?;
     }
@@ -645,7 +660,7 @@ fn generate_report_3(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
             r.funding_year.to_string(),
             r.type_of_work.clone(),
             r.total_projects.to_string(),
-            format!("{:.2}", r.avg_savings),
+            format_comma_float(r.avg_savings),
             format!("{:.2}", r.overrun_rate),
             format!("{:.2}", r.yoy_change),
         ])?;
