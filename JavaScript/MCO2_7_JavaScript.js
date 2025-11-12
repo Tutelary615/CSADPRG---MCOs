@@ -18,8 +18,6 @@
 
 const readline = require('readline');
 const csvReader = require('csv-parser');
-
-// const csvWriter = require('csv-writer').createObjectCsvWriter;
 const fs = require('fs');
 const csvFormatter = require('@fast-csv/format');
 
@@ -49,8 +47,7 @@ function getInput(query) {
  * @returns value rounded to 2 decimals
 */
 function roundValue(value, decimals = 2) {
-    const ten = Math.pow(10, decimals);
-    return Math.round(value * ten) / ten;
+    return parseFloat(value.toFixed(decimals));
 }
 
 /**
@@ -147,10 +144,6 @@ async function loadFile() {
             && !Number.isNaN(Number(row.ContractCost)))
         // Filters out rows not within the 2021 - 2023 range
         .filter(row => row.FundingYear >= 2021 && row.FundingYear <= 2023)
-        // Filters out duplicate rows (same project id)
-        // .filter((curr, index, self) => 
-        //     index === self.findIndex(x => x.ProjectId === curr.ProjectId)
-        // )
         // Type conversions and new columns
         .map((curr) => {
             // Date conversion
@@ -170,8 +163,8 @@ async function loadFile() {
             curr.ProvincialCapitalLongitude = Number(curr.ProvincialCapitalLongitude);
 
             // Creation and computation of new rows
-            curr.CostSavings = roundValue(curr.ApprovedBudgetForContract - curr.ContractCost);
-            curr.CompletionDelayDays = roundValue((curr.ActualCompletionDate - curr.StartDate) / (1000 * 60 * 60 * 24));
+            curr.CostSavings = curr.ApprovedBudgetForContract - curr.ContractCost;
+            curr.CompletionDelayDays = (curr.ActualCompletionDate - curr.StartDate) / (1000 * 60 * 60 * 24);
 
             return curr;
         })
@@ -399,11 +392,6 @@ function displayMainMenu() {
     console.log("[3] Exit\n");
 }
 
-//// CREATE FUNCTION FOR FORMATING REAL NUMBERS
-//// CREATE GETAVERAGE FUNCTION
-// CREATE SEPARATE FUNCTION FOR GENERATING ALL REPORTS (INCL DISPLAY)
-// SEPARATE CSV FOR INVALID ROWS
-// GET PERCENTAGE???
 async function mainMenu() {
     let option;
     let data;
