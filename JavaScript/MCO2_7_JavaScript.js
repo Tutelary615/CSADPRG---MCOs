@@ -444,9 +444,9 @@ function generateSummaryJSON(data) {
     summary.global_avg_delay = getAverage(data.map(curr => curr.CompletionDelayDays), summary.total_projects);
     summary.total_savings = data.reduce((total, curr) => total + curr.CostSavings, 0);
 
-    // Formatting decimal values
-    summary.global_avg_delay = roundValueToString(summary.global_avg_delay);
-    summary.total_savings = roundValueToString(summary.total_savings);
+    // Rounds decimal values to 2 decimal places
+    summary.global_avg_delay = roundValue(summary.global_avg_delay);
+    summary.total_savings = roundValue(summary.total_savings);
 
     return summary;
 }
