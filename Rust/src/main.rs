@@ -248,8 +248,8 @@ fn generate_reports() -> Result<(), Box<dyn Error>> {
         "total_projects": total_projects,
         "total_contractors": total_contractors,
         "total_provinces": total_provinces,
-        "global_avg_delay": format_comma_float(global_avg_delay),
-        "total_savings": format_comma_float(total_savings)
+        "global_avg_delay": global_avg_delay,
+        "total_savings": total_savings
     });
 
     let file = std::fs::File::create("summary.json")?;
@@ -361,7 +361,7 @@ fn generate_report_1(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
 
     // Header and Print loop (using format_comma_float)
     println!("| {:<40} | {:<10} | {:>18} | {:>15} | {:>13} | {:>12} | {:>17} |",
-        "Region", "MainIsland", "TotalBudget", "MedianSavings", "AvgDelayDays", "HighDelayPct", "EfficiencyScore"
+        "Region", "MainIsland", "TotalBudget", "MedianSavings", "AvgDelay", "HighDelayPct", "EfficiencyScore"
     );
 
     println!("{}", "-".repeat(147));
