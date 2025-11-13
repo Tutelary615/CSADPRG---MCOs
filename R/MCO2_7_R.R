@@ -7,7 +7,11 @@
 # HOW TO RUN
 # Download and install R via https://cran.r-project.org/
 # Open Command Prompt in this file's directory
-# Run R console -> source("MCO2_7_R.R")
+# Run R console
+# Install required libraries: tidyverse, scales, jsonlite
+#   > install.packages("package_name")
+# Source the source file
+#   > source("MCO2_7_R.R")
 # !! DATASET CSV FILE MUST BE LOCATED IN THE SAME DIRECTORY !!
 
 suppressPackageStartupMessages({
