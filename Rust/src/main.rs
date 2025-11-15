@@ -222,7 +222,7 @@ fn format_comma_int(n: usize) -> String {
         count += 1;
     }
 
-    // 4. The result is currently reversed. Reverse it back.
+    // The result is currently reversed. Reverse it back.
     result.chars().rev().collect()
 }
 
