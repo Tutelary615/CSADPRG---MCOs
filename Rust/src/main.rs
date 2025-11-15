@@ -552,32 +552,13 @@ fn generate_report_3(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
         yoy_change: f64,
     }
 
-    let mut rows3: Vec<Row3> = Vec::new();
-    let mut baseline_savings: HashMap<String, f64> = HashMap::new();
-
-    // Compute 2021 baseline averages
-    for ((year, work_type), items) in &grouped3 {
-        if *year == 2021 {
-            let avg_savings = if items.is_empty() {
-                0.0
-            } else {
-                // calculate average savings
-                items.iter()
-                    .map(|p| p.approved_budget - p.contract_cost)
-                    .sum::<f64>() / (items.len() as f64)
-            };
-
-            // save as baseline for this work type
-            baseline_savings.insert(work_type.clone(), avg_savings);
-        }
-    }
+    let mut temp_rows: Vec<Row3> = Vec::new();
 
     // Fill per (year, type_of_work)
     for ((year, work_type), items) in grouped3 {
         let total_projects = items.len();
 
-        // calculate average savings for cur year and worktype
-        let savings: Vec<f64> = items.iter().map(|p| p.approved_budget - p.contract_cost).collect();
+        let savings : Vec<f64> = items.iter().map(|p| p.approved_budget - p.contract_cost).collect();
 
         let avg_savings = if savings.is_empty() {
             0.0
@@ -585,42 +566,54 @@ fn generate_report_3(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
             savings.iter().sum::<f64>() / (savings.len() as f64)
         };
 
-        // calculate overrun rate
         let overrun_rate = if savings.is_empty() {
             0.0
         } else {
-            let negative_count = savings.iter().filter(|s| **s < 0.0).count();
+            let negative_count = savings.iter().filter(|s| **s <0.0).count();
             (negative_count as f64) * 100.0 / (savings.len() as f64)
         };
 
-        // Compute YoY change from 2021 baseline
-        // default = 0 if worktype wasnt present in 2021
-        let baseline = baseline_savings.get(&work_type).cloned().unwrap_or(0.0);
-        let yoy_change = if baseline.abs() < f64::EPSILON {
-            0.0
-        } else {
-            ((avg_savings - baseline) / baseline) * 100.0
-        };
-
-        // push calculated fields into results
-        rows3.push(Row3 {
+        temp_rows.push(Row3{
             funding_year: year,
             type_of_work: work_type,
             total_projects,
             avg_savings,
             overrun_rate,
-            yoy_change,
-        });
+            yoy_change: 0.0,
+        })
+    }
+
+    temp_rows.sort_by(|a, b| {
+    a.funding_year.cmp(&b.funding_year)
+        .then_with(|| a.type_of_work.cmp(&b.type_of_work))
+    });
+
+    let mut rows3: Vec<Row3> = Vec::new();
+    
+    let mut previous_year_savings: HashMap<String, f64> = HashMap::new(); //stores avg savings of previous year
+
+
+    for mut row in temp_rows {
+     
+        let previous_avg = previous_year_savings.get(&row.type_of_work).cloned().unwrap_or(0.0);
+
+        row.yoy_change = if previous_avg.abs() < f64::EPSILON {
+            0.0
+        } else {
+            ((row.avg_savings - previous_avg) / previous_avg) * 100.0
+        };
+
+        previous_year_savings.insert(row.type_of_work.clone(), row.avg_savings);
+
+        rows3.push(row);
     }
 
     // Sort by year then avg savings
     rows3.sort_by(|a, b| {
-        
         a.funding_year.cmp(&b.funding_year) 
             .then_with(|| {
-
-            b.avg_savings.partial_cmp(&a.avg_savings).unwrap_or(std::cmp::Ordering::Less)
-        })
+                b.avg_savings.partial_cmp(&a.avg_savings).unwrap_or(std::cmp::Ordering::Less)
+            })
     });
 
     // Print formatted table
@@ -662,7 +655,7 @@ fn generate_report_3(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
             r.total_projects.to_string(),
             format_comma_float(r.avg_savings),
             format!("{:.2}", r.overrun_rate),
-            format!("{:.2}", r.yoy_change),
+            format_comma_float(r.yoy_change)
         ])?;
     }
     wtr3.flush()?;
