@@ -203,6 +203,29 @@ fn format_comma_float(val: f64) -> String {
     format!("{}{}.{:02}", sign, whole.to_formatted_string(&Locale::en), fraction)
 }
 
+// format integers 
+fn format_comma_int(n: usize) -> String {
+    let s = (n as u64).to_string(); 
+    
+    let mut result = String::new();
+    let mut count = 0; 
+    
+    // Iterate over characters in reverse order
+    for c in s.chars().rev() {
+        // Insert comma after every three digits 
+        if count > 0 && count % 3 == 0 {
+            result.push(',');
+        }
+        
+        // Push the current digit
+        result.push(c);
+        count += 1;
+    }
+
+    // 4. The result is currently reversed. Reverse it back.
+    result.chars().rev().collect()
+}
+
 fn generate_reports() -> Result<(), Box<dyn Error>> {
 
     let projects = {
@@ -382,7 +405,7 @@ fn generate_report_1(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
 
     // Export CSV (sorted)
     let mut wtr = csv::Writer::from_path("report1_regional_summary.csv")?;
-    wtr.write_record(["Region", "MainIsland", "TotalBudget", "MedianSavings", "AvgDelayDays", "HighDelayPct", "EfficiencyScore"])?;
+    wtr.write_record(["Region", "MainIsland", "TotalBudget", "MedianSavings", "AvgDelay", "HighDelayPct", "EfficiencyScore"])?;
     for r in rows {
         wtr.write_record(&[
             r.region,
@@ -390,7 +413,7 @@ fn generate_report_1(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
             format_comma_float(r.total_budget),
             format_comma_float(r.median_savings),
             format!("{:.2}", r.avg_delay),
-            format!("{:.1}", r.delay_over30_pct),
+            format!("{:.2}", r.delay_over30_pct),
             format!("{:.2}", r.efficiency_score),
         ])?;
     }
@@ -590,20 +613,29 @@ fn generate_report_3(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
 
     let mut rows3: Vec<Row3> = Vec::new();
     
-    let mut previous_year_savings: HashMap<String, f64> = HashMap::new(); //stores avg savings of previous year
+    let mut previous_year_data: HashMap<String, (i32, f64)> = HashMap::new(); //stores avg savings of previous year
 
 
     for mut row in temp_rows {
      
-        let previous_avg = previous_year_savings.get(&row.type_of_work).cloned().unwrap_or(0.0);
+        let (previous_year, previous_avg) = previous_year_data
+        .get(&row.type_of_work)
+        .cloned()
+        .unwrap_or((0, 0.0));
 
-        row.yoy_change = if previous_avg.abs() < f64::EPSILON {
-            0.0
+        if row.funding_year == previous_year + 1 {
+            row.yoy_change = if previous_avg.abs() < f64::EPSILON {
+                0.0
+            } else {
+                ((row.avg_savings - previous_avg) / previous_avg) * 100.0
+            };
         } else {
-            ((row.avg_savings - previous_avg) / previous_avg) * 100.0
-        };
+            // Gap year
+            row.yoy_change = 0.0;
+        }
 
-        previous_year_savings.insert(row.type_of_work.clone(), row.avg_savings);
+        // Update the new rate
+        previous_year_data.insert(row.type_of_work.clone(), (row.funding_year, row.avg_savings));
 
         rows3.push(row);
     }
@@ -652,7 +684,7 @@ fn generate_report_3(projects: &Vec<Project>) -> Result<(), Box<dyn Error>> {
         wtr3.write_record(&[
             r.funding_year.to_string(),
             r.type_of_work.clone(),
-            r.total_projects.to_string(),
+            format_comma_int(r.total_projects),
             format_comma_float(r.avg_savings),
             format!("{:.2}", r.overrun_rate),
             format_comma_float(r.yoy_change)
